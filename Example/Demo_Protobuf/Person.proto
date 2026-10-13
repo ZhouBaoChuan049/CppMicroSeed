@@ -1,0 +1,28 @@
+//声明语法版本:
+syntax = "proto3" ;
+//声明包名称
+package person ;
+//启用rpc
+option cc_generic_services = true;
+//枚举类型
+enum SexType{
+    UnKonw = 0 ;
+    man = 1 ;
+    woman = 2 ;
+};
+//消息类型
+message Student{
+    int32 sn = 1 ;
+    string name = 2 ;
+    SexType sex = 3 ;
+    repeated float score = 4 ;
+    map<int32,string> other = 5 ;
+}
+// RPC 请求消息
+message PersonRequest {
+    int32 sn = 1;
+}
+// 服务类型
+service PersonService {
+    rpc GetPerson(PersonRequest) returns (Student);
+}//服务类型的参数和返回值都必须是message类型
