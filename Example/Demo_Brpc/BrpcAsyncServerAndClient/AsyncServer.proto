@@ -1,0 +1,14 @@
+syntax = "proto3";
+package AsyncCalServer ;
+option cc_generic_services = true ;
+
+message Request{
+    int32 numx = 1 ;
+    int32 numy = 2 ;
+}
+message Response{
+    int32 Result = 1 ;
+}
+service AsyncCalService{
+    rpc Add(Request) returns (Response) ;
+}
