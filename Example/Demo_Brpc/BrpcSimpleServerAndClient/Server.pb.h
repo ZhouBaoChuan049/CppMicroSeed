@@ -400,8 +400,6 @@ class AddServer_Stub : public AddServer {
 
   inline ::PROTOBUF_NAMESPACE_ID::RpcChannel* channel() { return channel_; }
 
-  // implements AddServer ------------------------------------------
-
   void Add(::PROTOBUF_NAMESPACE_ID::RpcController* controller,
                        const ::AddServer::MessageReq* request,
                        ::AddServer::MessageResp* response,
