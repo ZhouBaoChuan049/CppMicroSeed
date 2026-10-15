@@ -1,0 +1,24 @@
+syntax = "proto3" ;
+package AddServer ;
+option cc_generic_services = true;
+
+message AddRequest{
+    int32 numx = 1 ;
+    int32 numy = 2 ;
+}
+message AddResponse{
+    int32 Result = 1 ;
+}
+service AddService{
+    rpc Add(AddRequest) returns (AddResponse) ;
+}
+
+message HelloRequest{}
+message HelloResponse{}
+service HelloService{
+    rpc Hello(HelloRequest) returns (HelloResponse) ;
+}
+
+
+
+
