@@ -120,7 +120,7 @@ namespace MicroSeedBrpc
 
     //ClosureFactory Functions=====================================
 
-    google::protobuf::Closure* ClosureFactory::Create(CallBack& cbk)
+    google::protobuf::Closure* ClosureFactory::Create(const CallBack& cbk)
     {
         auto obj = std::make_shared<Object>();
         obj->_callback = cbk ;
@@ -132,12 +132,12 @@ namespace MicroSeedBrpc
     //RpcServerFactory Functions===================================
     std::shared_ptr<brpc::Server> RpcServerFactory::Create(
         int Port, 
-        google::protobuf::Service* service
+        std::shared_ptr<google::protobuf::Service> service
     ){
         brpc::ServerOptions options ;
         options.idle_timeout_sec = -1 ;
         auto server = std::make_shared<brpc::Server>();
-        int ret = server->AddService(service, brpc::SERVER_OWNS_SERVICE);
+        int ret = server->AddService(service.get(), brpc::SERVER_DOESNT_OWN_SERVICE);
         if(ret == -1){
             ERR("添加RPC服务器失败!");
             return nullptr ;

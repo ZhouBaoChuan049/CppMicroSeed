@@ -1,3 +1,4 @@
+#pragma once
 #include <butil/logging.h>
 #include <brpc/server.h>
 #include <brpc/channel.h>
@@ -50,11 +51,12 @@ namespace MicroSeedBrpc
             //所以服务与信道的关系是1:N.
     };
     class ClosureFactory{
+        public:
         ClosureFactory() = default ;
         ~ClosureFactory(){}
         using CallBack = std::function<void()>;
-        public:
-            google::protobuf::Closure* Create(CallBack& cbk);
+
+            google::protobuf::Closure* Create(const CallBack& cbk);
             //Closure在外面和lambda不是很适配，需要包装一遍.
         private:
             struct Object{
@@ -66,12 +68,12 @@ namespace MicroSeedBrpc
             }
     };
     class RpcServerFactory{
+        public:
         RpcServerFactory() = default ;
         ~RpcServerFactory(){} 
-        public:
             std::shared_ptr<brpc::Server> Create(
                 int Port, 
-                google::protobuf::Service* service
+                std::shared_ptr<google::protobuf::Service> service
             );
     };
 }
