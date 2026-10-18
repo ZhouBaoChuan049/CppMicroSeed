@@ -1,19 +1,18 @@
-#include <cstddef>
-#include <libavcodec/packet.h>
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libavutil/avutil.h>
-#include <libavutil/dict.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
-#include <libavutil/error.h>
-#include <pthread.h>
-#include <string>
+extern "C" {
+    #include <libavformat/avformat.h>
+    #include <libavcodec/avcodec.h>
+    #include <libavutil/avutil.h>
+    #include <libavutil/dict.h>
+    #include <libavutil/mathematics.h>
+    #include <libavutil/error.h>
+}
 #include <iostream>
-#include "../../Include/Log.h"
+#include <string>
 #include <vector>
+#include "../../Include/Log.h"
+
 char* CheckError(int errnum){
-    static char ErrBuffer[64] ;
+    static char ErrBuffer[128] ;
     int ret = av_strerror(
         errnum, 
         ErrBuffer, 
@@ -23,13 +22,18 @@ char* CheckError(int errnum){
         ERR("错误处理函数发生未知错误!");
     return ErrBuffer ;
 }
-int main()
+int main(int argc, char* argv[])
 {
+    MicroSeedLog::MicroSeedLogInit();
+    if(argc != 3){
+        ERR("命令行参数输入有误!应该为{}","./Proc InputFileName OutPutFileName");
+        return -1 ;
+    }
     //1. 打开输入文件，创建输入格式化上下文对象
-    AVFormatContext* InputContext = new AVFormatContext();
+    AVFormatContext* InputContext = nullptr;
     int ret = avformat_open_input(
         &InputContext,
-        "https://127.0.0.1:9000/video/Test.mp4",
+        argv[1],/*InputFileName*/
         nullptr,
         nullptr
     );
@@ -50,15 +54,19 @@ int main()
         return -1 ;
     }
     //3. 申请创建输出格式化上下文对象，并且设定输出格式 hls
-    AVFormatContext* OutputContext = new AVFormatContext();
+    AVFormatContext* OutputContext = nullptr;
     std::string FormatName = "hls" ;
-    std::string FileName = "Test.m3u8" ;
     ret = avformat_alloc_output_context2(
         &OutputContext,
         nullptr,
         FormatName.c_str(),
-        FileName.c_str()
+        argv[2]
     );
+    if(ret < 0){
+        char* errstring = CheckError(ret);
+        ERR("申请创建输出格式化上下文对象,并且设定输出格式为hls时发生错误,错误详情:{}",errstring);
+        return -1 ;
+    }
     //4. 遍历输入格式化上下文中的媒体流信息，为输出格式化上下文对象创建媒体流，并复制编解码器参数
     for(int i = 0 ; i < InputContext->nb_streams; i++){
         AVStream * InputAvstream = InputContext->streams[i];
@@ -72,24 +80,23 @@ int main()
             InputAvstream->codecpar
         );
         if(check < 0){
-            char* errstring = CheckError(ret);
+            char* errstring = CheckError(check);
             ERR("复制编解码参数时发生错误,错误详情:{}",errstring);
             return -1 ;
         }
-        //     AVRational time_base;               //时间基（时间戳单位），如 {1, 1000} 表示毫秒
         //     AVRational avg_frame_rate;          //平均帧率（如 {25, 1} 表示 25 FPS）
         //     AVRational r_frame_rate;            //标称帧率用于关键帧间隔计算。
-        OutputAvstream->time_base = InputAvstream->time_base ;
         OutputAvstream->avg_frame_rate = InputAvstream->avg_frame_rate ;
         OutputAvstream->r_frame_rate = InputAvstream->r_frame_rate ;
     }
     //5. 设置HLS转码的各项细节参数：播放类型-点播vod，分片时间， 路径前缀 /video/
-    AVDictionary * HeadInfo ;
+    AVDictionary * HeadInfo = nullptr ;
     int ret1 = av_dict_set(&HeadInfo,"hls_time","5",0);
-    int ret2 = av_dict_set(&HeadInfo,"hls_base_url","./",0);
+    int ret2 = av_dict_set(&HeadInfo,"hls_base_url","/video/",0);
     int ret3 = av_dict_set(&HeadInfo,"hls_list_size","0",0);
     int ret4 = av_dict_set(&HeadInfo,"hls_playlist_type","vod",0);
-    std::vector<int> ErrCheck = {ret1,ret2,ret3,ret4};
+    int ret5 = av_dict_set(&HeadInfo,"hls_flags","independent_segments",0);
+    std::vector<int> ErrCheck = {ret1,ret2,ret3,ret4,ret5};
     for(auto e : ErrCheck)
         if(e < 0 ){
             char* errstring = CheckError(ret);
@@ -107,7 +114,11 @@ int main()
         return -1 ;
     }
     //7. 遍历输入格式化上下文中的数据帧，
-    AVPacket* PackAge ;
+    AVPacket* PackAge = av_packet_alloc();
+    if (PackAge == nullptr) {
+        ERR("AVPacket内存分配失败!");
+        return -1;
+    }
     while(av_read_frame(InputContext,  PackAge) >= 0){
         AVStream* InputAVStream = InputContext->streams[PackAge->stream_index];
         AVStream* OutputAVStream = OutputContext->streams[PackAge->stream_index];
