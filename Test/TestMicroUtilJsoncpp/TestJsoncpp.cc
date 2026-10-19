@@ -10,20 +10,22 @@ using namespace MicroSeedUtil ;
             // static Json::Value UnSerialize(const std::string& input);
 TEST(TEST_MICRO_JSONCPP,Serialize)
 {
+    JsonUtil jsonutil ;
     Json::Value val;
     val["name"] = "zhangsan";
     val["age"] = 18;
     val["score"].append(77.5);
     val["score"].append(88.5);
     val["score"].append(99.5);
-    std::string ret = Serialize(val, false);
+    std::string ret = jsonutil.Serialize(val, false);
     std::cout<<ret<<std::endl;
 }
 
 TEST(TEST_MICRO_JSONCPP,UnSerialize)
 {
+    JsonUtil jsonutil ;
     std::string str = R"({"name":"Konata","age":18})";
-    Json::Value val = UnSerialize(str);
+    Json::Value val = jsonutil.UnSerialize(str);
     std::cout<< val["name"]<<std::endl;
     std::cout<<val["age"]<<std::endl;
 }
