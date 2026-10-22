@@ -9,7 +9,7 @@ using namespace MicroSeedLog ;
 namespace MicroSeedUtil
 {
     //JSONUTIL
-    std::string Serialize(
+    std::string JsonUtil::Serialize(
         const Json::Value& val,bool styles){
             Json::StreamWriterBuilder builder ;
             if(styles == false)
@@ -23,7 +23,7 @@ namespace MicroSeedUtil
             }
             return ss.str();
     }
-    Json::Value UnSerialize(const std::string& input){
+    Json::Value JsonUtil::UnSerialize(const std::string& input){
         Json::CharReaderBuilder builder ;
         std::unique_ptr<Json:: CharReader> reader(builder.newCharReader());
         Json::Value val ;
