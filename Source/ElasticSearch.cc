@@ -93,6 +93,51 @@ namespace MicroSeedElastic
         return analysis ;
     }
     //SETTING END
+    //FIELDS 
+    Fields::Fields(std::string fieldname)
+        :Object(fieldname){
+        this->Type("text");
+    }
+    void Fields::Type(std::string typrname){
+        this->Add("type", typrname);}
+    void Fields::Boost(double boostnum){
+        this->Add("boost", boostnum);}
+    void Fields::Analyzer(std::string analyzername){
+        this->Add("analyzer", analyzername);}
+    void Fields::Index(bool indexnum){
+        this->Add("index", indexnum);}
+    //FIELDS END
+    //PROPERTIES
+    Properties::Properties()
+        :Object("properties"){}
+    Fields::FieldsPtr Properties::field(std::string fieldname){
+        Fields::FieldsPtr ptr; 
+        ptr = this->GetElememt<Fields>(fieldname);
+        if(ptr != nullptr)
+            return ptr;
+        auto field = std::make_shared<Fields>(fieldname);
+        this->AddElememt(field);
+        return field;
+    }
+    //PROPERTIES END
+    //MAPPING
+    Mappings::Mappings()
+        :Object("mapping"){
+        Dynamic(false);
+    }
+    void Mappings::Dynamic(bool dynamicnum){
+        this->Add("dynamic", dynamicnum);
+    }
+    Properties::PropertiesPtr Mappings::properties(){
+        Properties::PropertiesPtr ptr; 
+        ptr = this->GetElememt<Properties>("properties");
+        if(ptr != nullptr)
+            return ptr;
+        auto properties = std::make_shared<Properties>();
+        this->AddElememt(properties);
+        return properties;
+    }
+    //MAPPING END
     //INDEXER
     Indexer::Indexer()
         :Object("")
@@ -106,12 +151,28 @@ namespace MicroSeedElastic
         this->AddElememt(setting);
         return setting ;
     }
-    Tokenizer::TokenizerPtr Indexer::BuildChain(){
+    Tokenizer::TokenizerPtr Indexer::BuildSettingChain(){
         return this->
         setting()->
         analysis()->
         analyzer()->
         tokenizer("ikmax") ;
+    }
+    Properties::PropertiesPtr Indexer::BuildMappingChain(){
+        return this->
+        mapping()->
+        properties();
+        //向外给一个Properties::PropertiesPtr的指针，
+        // 然后用户可以拿着这个指针去添加各种他需要的Field对象
+    }
+    Mappings::MappingsPtr Indexer::mapping(){
+        Mappings::MappingsPtr ptr; 
+        ptr = this->GetElememt<Mappings>("mapping");
+        if(ptr != nullptr)
+            return ptr;
+        auto mapping = std::make_shared<Mappings>();
+        this->AddElememt(mapping);
+        return mapping;
     }
     //INDEXER END
 }

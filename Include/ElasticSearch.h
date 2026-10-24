@@ -76,10 +76,34 @@ namespace MicroSeedElastic
         Setting();
         Analysis::AnalysisPtr analysis();
     };
+    class Fields : public Object{
+    public:
+        using FieldsPtr = std::shared_ptr<Fields> ;
+        Fields(std::string fieldname);
+        void Type(std::string typrname);
+        void Boost(double boostnum);
+        void Analyzer(std::string analyzername);
+        void Index(bool indexnum);
+    };
+    class Properties : public Object{
+    public:
+        using PropertiesPtr = std::shared_ptr<Properties> ;
+        Properties();
+        Fields::FieldsPtr field(std::string fieldname);
+    };
+    class Mappings : public Object{
+    public:
+        using MappingsPtr = std::shared_ptr<Mappings> ;
+        Mappings();
+        void Dynamic(bool dynamicnum);
+        Properties::PropertiesPtr properties();  
+    };
     class Indexer :public Object{
     public:
         Indexer();
         Setting::SettingPtr setting();
-        Tokenizer::TokenizerPtr BuildChain();
+        Tokenizer::TokenizerPtr BuildSettingChain();
+        Properties::PropertiesPtr  BuildMappingChain();
+        Mappings::MappingsPtr mapping();
     };
 }

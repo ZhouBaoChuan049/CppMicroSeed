@@ -37,12 +37,30 @@ void ShowSettingOnly(){
     std::string ret = setting->ToString();
     std::cout<<ret<<std::endl;
 }
-void ShowIndexOnly(){
+void ShowIndexWithSetting(){
     auto index = std::make_shared<Indexer>() ;
-    Tokenizer ::TokenizerPtr tokenizer = index->BuildChain();
+    Tokenizer ::TokenizerPtr tokenizer = index->BuildSettingChain();
     //还可以直接使用返回值来修改Tokenizer的字段
     // tokenizer->tokenzier("TestTokenizer");
     // tokenizer->type("TestType");
+    std::string ret = index->ToString();
+    std::cout<<ret<<std::endl;
+}
+void ShowIndexWithSettingAndMapping(){
+    auto index = std::make_shared<Indexer>() ;
+    Tokenizer ::TokenizerPtr tokenizer = index->BuildSettingChain();
+    Properties::PropertiesPtr properties = index->BuildMappingChain();
+    Fields::FieldsPtr fieldptr_name = properties->field("name");
+    fieldptr_name->Boost(3.0);
+    fieldptr_name->Analyzer("ikmax");
+    Fields::FieldsPtr fieldptr_age = properties->field("age");
+    fieldptr_age->Type("integer");
+    Fields::FieldsPtr fieldptr_phone = properties->field("phone");
+    fieldptr_phone->Type("keyword");
+    properties->field("skill");
+    Fields::FieldsPtr fieldptr_birth = properties->field("birth");
+    fieldptr_birth->Type("date");
+    fieldptr_birth->Index(false);
     std::string ret = index->ToString();
     std::cout<<ret<<std::endl;
 }
@@ -52,6 +70,7 @@ int main()
     //ShowObjectOnly();
     //ShowAnalysisOnly();
     //ShowSettingOnly();
-    ShowIndexOnly();
+    //ShowIndexOnly_1();
+    ShowIndexWithSettingAndMapping();
     return 0 ; 
 }
