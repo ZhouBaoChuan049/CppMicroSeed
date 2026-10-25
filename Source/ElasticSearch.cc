@@ -175,4 +175,80 @@ namespace MicroSeedElastic
         return mapping;
     }
     //INDEXER END
+    //QUERY
+    Term::Term(std::string field) 
+        :Object("term"){
+        _field = field ;
+    }
+    Terms::Terms(std::string field) 
+        :Object("terms"){
+        _field = field ;
+    }
+    Match::Match(std::string field) 
+        :Object("match"){
+        _field = field ;
+    }
+    MultiMatch::MultiMatch() 
+        :Object("multi_match"){}
+    Range::Range(std::string field) 
+        :Object("range"){
+            _field = field;
+    }
+    QueryObject::QueryObject(std::string key) 
+        :Object(key){}
+    void MultiMatch::AppendField(std::string val) {
+        this->Append("fields", val);
+    }
+    void Range::Field(int gte, int lte) {
+        this->Add("gte", gte);
+        this->Add("lte",lte);
+    }
+    Range::RangePtr QueryObject::range(std::string field) {
+        Range::RangePtr ptr; 
+        ptr = this->GetElememt<Range>("range");
+        if(ptr != nullptr)
+            return ptr;
+        auto range = std::make_shared<Range>(field);
+        this->AddElememt(range);
+        return range;
+    }
+    MultiMatch::MultiMatchPtr QueryObject::multimatch() {
+        MultiMatch::MultiMatchPtr ptr; 
+        ptr = this->GetElememt<MultiMatch>("multi_match");
+        if(ptr != nullptr)
+            return ptr;
+        auto multimatch = std::make_shared<MultiMatch>();
+        this->AddElememt(multimatch);
+        return multimatch;
+    }
+    Match::MatchPtr QueryObject::match(std::string field) {
+        Match::MatchPtr ptr; 
+        ptr = this->GetElememt<Match>("match");
+        if(ptr != nullptr)
+            return ptr;
+        auto match = std::make_shared<Match>(field);
+        this->AddElememt(match);
+        return match;
+    }
+
+    Terms::TermsPtr QueryObject::terms(std::string field) {
+        Terms::TermsPtr ptr; 
+        ptr = this->GetElememt<Terms>("terms");
+        if(ptr != nullptr)
+            return ptr;
+        auto terms = std::make_shared<Terms>(field);
+        this->AddElememt(terms);
+        return terms;
+    }
+
+    Term::TermPtr QueryObject::term(std::string field) {
+        Term::TermPtr ptr; 
+        ptr = this->GetElememt<Term>("term");
+        if(ptr != nullptr)
+            return ptr;
+        auto term = std::make_shared<Term>(field);
+        this->AddElememt(term);
+        return term;
+    }
+    //QUERY END
 }

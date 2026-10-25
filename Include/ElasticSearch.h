@@ -11,6 +11,7 @@
 #include "Util.h"
 namespace MicroSeedElastic
 {
+    //////////////////////////公共基类////////////////////////////////////
     class Base{
     public:
         using BasePtr = std::shared_ptr<Base> ;
@@ -51,6 +52,8 @@ namespace MicroSeedElastic
     private:
         std::unordered_map<std::string, BasePtr> _Objects ;
     };
+    ///////////////////////////////////////////////////////////////////////
+    ////////////////////////创建索引/////////////////////////////////////
     class Tokenizer : public Object{
     public:
         using TokenizerPtr = std::shared_ptr<Tokenizer> ;
@@ -105,5 +108,72 @@ namespace MicroSeedElastic
         Tokenizer::TokenizerPtr BuildSettingChain();
         Properties::PropertiesPtr  BuildMappingChain();
         Mappings::MappingsPtr mapping();
+    };
+    //////////////////////////////////////////////////////////////////////////
+    ///////////////////////////查询:单条件检索////////////////////////////////////////////////
+    //单个字段的精确匹配
+    class Term : public Object{
+    public :
+        using TermPtr = std::shared_ptr<Term> ;
+        Term(std::string field);
+        template<typename T>
+        void SetVal(const T val){
+            this->Add(_field, val);
+        }
+    private:
+        std::string _field ;
+    };
+    //多个字段的精确匹配
+    class Terms : public Object{
+    public :
+        using TermsPtr = std::shared_ptr<Terms> ;
+        Terms(std::string field);
+        template<typename T>
+        void SetVal(const T val){
+            this->Append(_field, val);
+        }
+    private:
+        std::string _field ;
+    };
+    //单个字段的模糊匹配
+    class Match : public Object{
+    public :
+        using MatchPtr = std::shared_ptr<Match> ;
+        Match(std::string field);
+        template<typename T>
+        void SetVal(const T val){
+            this->Add(_field, val);
+        }
+    private:
+        std::string _field ;
+    };
+    //多个字段的模糊匹配
+    class MultiMatch : public Object{
+    public :
+        using MultiMatchPtr = std::shared_ptr<MultiMatch> ;
+        MultiMatch();
+        void AppendField(std::string val);
+        template<typename T>
+        void SetQuery(const T val){
+            this->Add("query", val);//这里的val可以是数组的类型
+        }
+    };
+    //数字区间的匹配
+    class Range : public Object{
+    public :
+        using RangePtr = std::shared_ptr<Range> ;
+        Range(std::string field);
+        void Field(int gte, int lte);
+    private:
+        std::string _field ;
+    };
+    class QueryObject: public Object{
+    public:
+        QueryObject(std::string key);
+        Range::RangePtr range(std::string field);
+        MultiMatch::MultiMatchPtr multimatch();
+        Match::MatchPtr match(std::string field);
+        Terms::TermsPtr terms(std::string field);
+        Term::TermPtr term(std::string field);
     };
 }

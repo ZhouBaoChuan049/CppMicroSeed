@@ -64,6 +64,24 @@ void ShowIndexWithSettingAndMapping(){
     std::string ret = index->ToString();
     std::cout<<ret<<std::endl;
 }
+void ShowQueryWithHisSub(){
+    QueryObject qobj("query") ;
+    auto termptr = qobj.term("name.keyword");
+    termptr->SetVal("Mr.List");
+    auto termsptr = qobj.terms("phonenumber");
+    termsptr->SetVal("12125648595");
+    termsptr->SetVal("12456786495");
+    auto matchptr = qobj.match("name");
+    matchptr->SetVal("Mr.Zcom");
+    auto rangeptr = qobj.range("age");
+    rangeptr->Field(10,20);
+    auto multimatchptr = qobj.multimatch();
+    multimatchptr->AppendField("name");
+    multimatchptr->AppendField("phone");
+    multimatchptr->SetQuery("Mr.Zount");
+    std::string QobjString = qobj.ToString();
+    std::cout<<QobjString<<std::endl;
+}
 int main()
 {
     //ShowBaseOnly() ;
@@ -71,6 +89,7 @@ int main()
     //ShowAnalysisOnly();
     //ShowSettingOnly();
     //ShowIndexOnly_1();
-    ShowIndexWithSettingAndMapping();
+    //ShowIndexWithSettingAndMapping();
+    ShowQueryWithHisSub();
     return 0 ; 
 }
