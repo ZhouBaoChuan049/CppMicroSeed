@@ -8,14 +8,14 @@ namespace MicroSeedElastic
     //BASE 
     Base::Base(std::string key)
         :_Key(key){}
-    std::string Base::ToString(){
+    const std::string Base::ToString()const{
         Json::Value root ;
         root[_Key] = _Val ;
         MicroSeedUtil::JsonUtil util ;
         return util.Serialize(root, true);
     }
-    std::string Base::GetKey(){ return _Key;}
-    Json::Value Base::GetVal(){ return _Val;}
+    std::string Base::GetKey()const{ return _Key;}
+    const Json::Value Base::GetVal()const{ return _Val;}
     //BASE END
     //OBJECT 
     Object::Object(std::string val)
@@ -23,7 +23,7 @@ namespace MicroSeedElastic
     void Object::AddElememt(const BasePtr& baseptr){
         _Objects[baseptr->GetKey()] = baseptr;
     }
-    std::string Object::ToString(){
+    const std::string Object::ToString()const {
         Json::Value root ;
         for(auto i : _Objects){
             root[i.first] = i.second->GetVal() ;
@@ -31,7 +31,7 @@ namespace MicroSeedElastic
         MicroSeedUtil::JsonUtil util ;
         return util.Serialize(root, true);
     }
-    Json::Value Object::GetVal(){
+    const Json::Value Object::GetVal()const {
         Json::Value root = _Val ;
         for(auto obj : _Objects)
             root[obj.first] = obj.second->GetVal();
@@ -40,7 +40,58 @@ namespace MicroSeedElastic
         //Analyzer的GetVal又调用了Tokenizer的GetVal(),将Tokenzer的Val向上传递.
         return root ;
     }
+    std::shared_ptr<Object> Object::NewObject(const std::string& key){
+        Object::ObjectPtr ptr; 
+        ptr = this->GetElememt<Object>(key);
+        if(ptr != nullptr)
+            return ptr;
+        auto newobj = std::make_shared<Tokenizer>(key);
+        this->AddElememt(newobj);
+        return newobj;
+    }
+    std::shared_ptr<Array> Object::NewArray(const std::string& key){
+        Array::ArrayPtr ptr; 
+        ptr = this->GetElememt<Array>(key);
+        if(ptr != nullptr)
+            return ptr;
+        auto newarr = std::make_shared<Array>(key);
+        this->AddElememt(newarr);
+        return newarr;
+    }
     //OBJECT END
+
+    //ARRAY
+    Array::Array(const std::string key)
+        :Base(key){}
+    std::shared_ptr<Object> Array::NewObject(const std::string& key){
+        //在数组里面，我认为不需要去判断我加入
+        //进来的这个对象是否存在，完全可以重复出现.
+        auto newobj = std::make_shared<Tokenizer>(key);
+        this->AddElememt(newobj);
+        return newobj;
+    }
+    std::shared_ptr<Array> Array::NewArray(const std::string& key){
+        auto newarr = std::make_shared<Array>(key);
+        this->AddElememt(newarr);
+        return newarr;
+    }
+    void Array::AddElememt(const Base::BasePtr& baseptr){
+        _Objects.push_back(baseptr);
+    }
+    const Json::Value Array::GetVal() const {
+        Json::Value root ;
+        for(auto sub : _Objects)
+            root.append(sub->GetVal());
+        return root ;
+    }
+    const std::string Array::ToString() const {
+        Json::Value root ;
+        for(auto sub : _Objects)
+            root.append(sub->GetVal());
+        MicroSeedUtil::JsonUtil util ;
+        return util.Serialize(root, true);
+    }
+    //ARRAY END
     //TOKENIZER 
     Tokenizer::Tokenizer(std::string str)
         :Object(str){
@@ -175,7 +226,7 @@ namespace MicroSeedElastic
         return mapping;
     }
     //INDEXER END
-    //QUERY
+    //QUERYOBJECT
     Term::Term(std::string field) 
         :Object("term"){
         _field = field ;
@@ -250,5 +301,81 @@ namespace MicroSeedElastic
         this->AddElememt(term);
         return term;
     }
-    //QUERY END
+    //QUERYOBJECT END
+
+    //QUERYARRAY
+    QueryArray::QueryArray(std::string key)
+        :Array(key){}
+    Range::RangePtr QueryArray::range(std::string field){
+        auto range = std::make_shared<Range>(field);
+        auto obj = NewObject("");
+        obj->AddElememt(range);
+        return range ;
+    }
+    MultiMatch::MultiMatchPtr QueryArray::multimatch(){
+        auto multimatch = std::make_shared<MultiMatch>();
+        auto obj = NewObject("");
+        obj->AddElememt(multimatch);
+        return multimatch ;
+    }
+    Match::MatchPtr QueryArray::match(std::string field){
+        auto match = std::make_shared<Match>(field);
+        auto obj = NewObject("");
+        obj->AddElememt(match);
+        return match;
+    }
+    Terms::TermsPtr QueryArray::terms(std::string field){
+        auto terms = std::make_shared<Terms>(field);
+        auto obj = NewObject("");
+        obj->AddElememt(terms);
+        return terms;
+    }
+    Term::TermPtr QueryArray::term(std::string field){
+        auto term = std::make_shared<Term>(field);
+        auto obj = NewObject("");
+        obj->AddElememt(term);
+        return term;
+    }
+    //QUERYARRAY END
+    //MUST MUSTNOT STUDENT
+    Must::Must(std::string key)
+        :QueryArray(key){}
+    MustNot::MustNot(std::string key)
+        :QueryArray(key){}
+    Should::Should(std::string key)
+        :QueryArray(key){}
+    //MUST MUSTNOT STUDENT END
+
+    //QUERYBOOL
+    QueryBool::QueryBool(std::string key)
+        :QueryObject(key){}
+    Must::MustPtr QueryBool::must(){
+        auto ret = this->GetElememt<Must>("must");
+        if(ret != nullptr)
+            return ret ;
+        auto _must = std::make_shared<Must>();
+        this->AddElememt(_must);
+        return _must;
+    }
+    MustNot::MustNotPtr QueryBool::mustnot(){
+        auto ret = this->GetElememt<MustNot>("must_not");
+        if(ret != nullptr)
+            return ret ;
+        auto _mustnot = std::make_shared<MustNot>();
+        this->AddElememt(_mustnot);
+        return _mustnot;
+    }
+    Should::ShouldPtr QueryBool::should(){
+        auto ret = this->GetElememt<Should>("should");
+        if(ret != nullptr)
+            return ret ;
+        auto _should = std::make_shared<Should>();
+        this->AddElememt(_should);
+        return _should;
+    }
+    void QueryBool::MiniMumShouldMatch(const int num){
+        this->Add("mininum_should_match", num);
+    }
+    //QUERYBOOL END
+
 }

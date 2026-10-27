@@ -17,9 +17,9 @@ namespace MicroSeedElastic
         using BasePtr = std::shared_ptr<Base> ;
         Base() = default ;
         Base(std::string key);
-        virtual std::string ToString();
-        std::string GetKey();
-        virtual Json::Value GetVal();
+        virtual const std::string ToString()const ;
+        std::string GetKey() const ;
+        virtual const Json::Value GetVal()const ;
         template<typename T>
         Base& Add(const std::string key, const T val){
             _Val[key] = val;
@@ -34,11 +34,12 @@ namespace MicroSeedElastic
         std::string _Key ;
         Json::Value _Val ;
     };  
+    class Array ;
     class Object : public Base{
     public:
         using ObjectPtr = std::shared_ptr<Object> ;
         Object(std::string val);
-        void AddElememt(const BasePtr& baseptr);
+        void AddElememt(const Base::BasePtr& baseptr);
         template<typename R>
         std::shared_ptr<R> GetElememt(std::string str){
             auto i = _Objects.find(str);
@@ -47,10 +48,27 @@ namespace MicroSeedElastic
             }
             return std::dynamic_pointer_cast<R>(_Objects[str]);
         }
-        Json::Value GetVal() override;
-        std::string ToString() override;
+        std::shared_ptr<Object> NewObject(const std::string& key);
+        std::shared_ptr<Array> NewArray(const std::string& key);
+
+        virtual const Json::Value GetVal() const override;
+        virtual const std::string ToString() const override;
     private:
         std::unordered_map<std::string, BasePtr> _Objects ;
+    };
+    class Array : public Base
+    {
+    public:
+        using ArrayPtr = std::shared_ptr<Array>;
+        Array(const std::string key);
+        std::shared_ptr<Object> NewObject(const std::string& key);
+        std::shared_ptr<Array> NewArray(const std::string& key);
+
+        void AddElememt(const Base::BasePtr& baseptr);
+        virtual const Json::Value GetVal() const override;
+        virtual const std::string ToString() const override;
+    private:
+        std::vector<Base::BasePtr> _Objects ;
     };
     ///////////////////////////////////////////////////////////////////////
     ////////////////////////创建索引/////////////////////////////////////
@@ -169,6 +187,7 @@ namespace MicroSeedElastic
     };
     class QueryObject: public Object{
     public:
+        using QueryObjectPtr = std::shared_ptr<QueryObject> ;
         QueryObject(std::string key);
         Range::RangePtr range(std::string field);
         MultiMatch::MultiMatchPtr multimatch();
@@ -176,4 +195,38 @@ namespace MicroSeedElastic
         Terms::TermsPtr terms(std::string field);
         Term::TermPtr term(std::string field);
     };
+    class QueryArray : public Array{
+    public:
+        using QueryArrayPtr = std::shared_ptr<QueryArray> ;
+        QueryArray(std::string key);
+        Range::RangePtr range(std::string field);
+        MultiMatch::MultiMatchPtr multimatch();
+        Match::MatchPtr match(std::string field);
+        Terms::TermsPtr terms(std::string field);
+        Term::TermPtr term(std::string field);
+    };
+    class Must : public QueryArray{
+    public:
+        using MustPtr = std::shared_ptr<Must> ;
+        Must(std::string key);
+    };
+    class MustNot : public QueryArray{
+    public:
+        using MustNotPtr = std::shared_ptr<MustNot> ;
+        MustNot(std::string key);
+    };
+    class Should : public QueryArray{
+    public:
+        using ShouldPtr = std::shared_ptr<Should> ;
+        Should(std::string key);
+    };
+    class QueryBool : public QueryObject{
+    public:
+        QueryBool(std::string key);
+        Must::MustPtr must();
+        MustNot::MustNotPtr mustnot();
+        Should::ShouldPtr should();
+        void MiniMumShouldMatch(const int num);
+    };
+    
 }
