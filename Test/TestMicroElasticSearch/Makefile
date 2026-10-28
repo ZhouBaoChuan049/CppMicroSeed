@@ -1,12 +1,14 @@
 OBJ = Proc
-SRC = ./TestElasticSearch.cc ../../Source/ElasticSearch.cc ../../Source/Util.cc ../../Source/Log.cc
+SRC = ./RealTestElasticSearch.cc ../../Source/ElasticSearch.cc ../../Source/Util.cc ../../Source/Log.cc
 REQUIRE = -std=c++17 \
           -lpthread \
           -I ../../Include \
           -lspdlog \
           -lfmt \
           -lgflags \
-		  -ljsoncpp
+          -ljsoncpp \
+          -lcpr \
+          -lelasticlient
 
 $(OBJ) : $(SRC)
 	g++ -o $@ $^ $(REQUIRE)
