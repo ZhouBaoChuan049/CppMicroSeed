@@ -1,7 +1,9 @@
 #include "../Include/ElasticSearch.h"
 #include <cstddef>
+#include <elasticlient/client.h>
 #include <jsoncpp/json/value.h>
 #include <memory>
+#include "../Include/Log.h"
 
 namespace MicroSeedElastic
 {
@@ -189,43 +191,7 @@ namespace MicroSeedElastic
         return properties;
     }
     //MAPPING END
-    //INDEXER
-    Indexer::Indexer()
-        :Object("")
-    {}
-    Setting::SettingPtr Indexer::setting(){
-        Setting::SettingPtr ptr; 
-        ptr = this->GetElememt<Setting>("setting");
-        if(ptr != nullptr)
-            return ptr;
-        auto setting = std::make_shared<Setting>();
-        this->AddElememt(setting);
-        return setting ;
-    }
-    Tokenizer::TokenizerPtr Indexer::BuildSettingChain(){
-        return this->
-        setting()->
-        analysis()->
-        analyzer()->
-        tokenizer("ikmax") ;
-    }
-    Properties::PropertiesPtr Indexer::BuildMappingChain(){
-        return this->
-        mapping()->
-        properties();
-        //向外给一个Properties::PropertiesPtr的指针，
-        // 然后用户可以拿着这个指针去添加各种他需要的Field对象
-    }
-    Mappings::MappingsPtr Indexer::mapping(){
-        Mappings::MappingsPtr ptr; 
-        ptr = this->GetElememt<Mappings>("mapping");
-        if(ptr != nullptr)
-            return ptr;
-        auto mapping = std::make_shared<Mappings>();
-        this->AddElememt(mapping);
-        return mapping;
-    }
-    //INDEXER END
+
     //QUERYOBJECT
     Term::Term(std::string field) 
         :Object("term"){
@@ -377,5 +343,264 @@ namespace MicroSeedElastic
         this->Add("mininum_should_match", num);
     }
     //QUERYBOOL END
+    //QUERY
 
+    Query::Query()
+        :QueryObject("query")
+    {}
+    void Query::match_all(){}
+    QueryBool::QueryBoolPtr Query::Qbool(){
+        auto ret = this->GetElememt<QueryBool>("bool");
+        if(ret != nullptr)
+            return ret ;
+        auto _bool = std::make_shared<QueryBool>();
+        this->AddElememt(_bool);
+        return _bool;
+    }
+    Must::MustPtr Query::must(){ return this->Qbool()->must();}
+    MustNot::MustNotPtr Query::mustnot(){ return this->Qbool()->mustnot();}
+    Should::ShouldPtr Query::should(){ return this->Qbool()->should();}
+    //QUERY END
+    //REQUEST
+    Request::Request(std::string _Operatoion,std::string _Index,
+        std::string _Type,std::string _Id )
+        :_Operatoion(_Operatoion),
+         _Index(_Index),
+         _Type(_Type),
+         _Id(_Id){}
+    void Request::SetIndex(std::string index){ _Index = index;}
+    void Request::SetOperation(std::string Operation){ _Operatoion = Operation;}
+    void Request::SetType(std::string Type){ _Type = Type;}
+    void Request::SetID(std::string id){ _Id = id;}
+    const std::string Request::Index()const{ return _Index;}
+    const std::string Request::Type()const{ return _Type;}
+    const std::string Request::Operatoion()const{ return _Operatoion;}
+    const std::string Request::ID()const{ return _Id;}
+    //REQUEST END
+    //INDEXER
+    Indexer::Indexer(std::string index)
+        :Object(""),
+         Request("index",
+            index,
+            "_doc",
+            "index"//传递与否无所谓
+        ){}
+    Setting::SettingPtr Indexer::setting(){
+        Setting::SettingPtr ptr; 
+        ptr = this->GetElememt<Setting>("setting");
+        if(ptr != nullptr)
+            return ptr;
+        auto setting = std::make_shared<Setting>();
+        this->AddElememt(setting);
+        return setting ;
+    }
+    Tokenizer::TokenizerPtr Indexer::BuildSettingChain(){
+        return this->
+        setting()->
+        analysis()->
+        analyzer()->
+        tokenizer("ikmax") ;
+    }
+    Properties::PropertiesPtr Indexer::BuildMappingChain(){
+        return this->
+        mapping()->
+        properties();
+        //向外给一个Properties::PropertiesPtr的指针，
+        // 然后用户可以拿着这个指针去添加各种他需要的Field对象
+    }
+    Mappings::MappingsPtr Indexer::mapping(){
+        Mappings::MappingsPtr ptr; 
+        ptr = this->GetElememt<Mappings>("mapping");
+        if(ptr != nullptr)
+            return ptr;
+        auto mapping = std::make_shared<Mappings>();
+        this->AddElememt(mapping);
+        return mapping;
+    }
+    //INDEXER END
+    //INSERT
+    Insert::Insert(std::string index, std::string id)
+        :Object(""),
+         Request("_insert",
+            index,
+            "_doc",
+            id
+        ){}
+    //INSERT END
+    //UPDATE
+    Update::Update(std::string index, std::string id)
+        :Object(""),
+        Request("_update",
+        index,
+        "_doc",
+        id
+    ){}
+    Object::ObjectPtr Update::doc(){
+        Object::ObjectPtr ptr; 
+        ptr = this->GetElememt<Object>("_doc");
+        if(ptr != nullptr)
+            return ptr;
+        auto doc = std::make_shared<Object>("_doc");
+        this->AddElememt(doc);
+        return doc;
+    }
+    //UPDATE END
+    //DELETE 
+    Delete::Delete(std::string index, std::string id)
+        :Object(""),
+         Request("_delete",
+            index,
+            "_doc",
+            id
+        ){}
+    //DELETE END
+    //SEARCH
+    Search::Search(std::string index)
+        :Object(""),
+         Request("_search",
+            index,
+            "_doc",
+            ""
+        ){}
+    Query::QueryPtr Search::query(){
+        Query::QueryPtr ptr; 
+        ptr = this->GetElememt<Query>("query");
+        if(ptr != nullptr)
+            return ptr;
+        auto query = std::make_shared<Query>();
+        this->AddElememt(query);
+        return query;
+    }
+    void Search::size(size_t count){ this->Add("size", count);}
+    void Search::form(size_t offset){ this->Add("form", offset);}
+    //SEARCH END
+    //ESCLIENT
+    ESClient::ESClient(std::vector<std::string> host)
+        :_Client(std::make_shared<elasticlient::Client>(host))
+    {}
+    bool ESClient::CreateIndex(const Indexer index){
+        const std::string _Index = index.Index(); 
+        const std::string _Type = index.Type();
+        const std::string _ID = index.ID();
+        const std::string _Body = index.ToString();
+        auto response = _Client->index(
+            _Index, 
+            _Type, 
+            _ID, 
+            _Body
+        );
+        if(response.status_code < 200 || response.status_code >= 300){
+            ERR(
+                "{}/{} - {} Create Index Fail! ERR information:{}",
+                _Index,_Type,_ID,_Body, response.text
+            );
+            return false;
+        }
+        return true;
+    }
+    bool ESClient::InsertDate(const Insert index) {
+        const std::string _Index = index.Index(); 
+        const std::string _Type = index.Type();
+        const std::string _ID = index.ID();
+        const std::string _Body = index.ToString();
+        auto response = _Client->index(
+            _Index, 
+            _Type, 
+            _ID, 
+            _Body);
+        if(response.status_code < 200 || response.status_code >= 300){
+            ERR(
+                "{}/{}/{} - {} Insert fail! ERR information:{}",
+                _Index,_Type,_ID,_Body, response.text
+            );
+            return false;
+        }
+        return true;
+    }
+    bool ESClient::UpdateDate(const Update index) {
+        const std::string _Index = index.Index(); 
+        const std::string _Type = index.Type();
+        const std::string _ID = index.ID();
+        const std::string _Body = index.ToString();
+        const std::string url = _Index + "_update" + _ID;
+        auto response = 
+            _Client->performRequest(
+                elasticlient::Client::HTTPMethod::POST, 
+                url, _Body
+        );
+        if(response.status_code < 200 || response.status_code >= 300){
+            ERR("{}/{}/{} - {} Update fail! ERR information:{}",
+                _Index,_Type,_ID,_Body, response.text
+            );
+            return false;
+        }
+        return true;
+    }
+    bool ESClient::DeleteDate(const Delete index) {
+        const std::string _Index = index.Index(); 
+        const std::string _Type = index.Type();
+        const std::string _ID = index.ID();
+        auto response = 
+            _Client->remove(_Index,_Type, _ID);
+        if(response.status_code < 200 || response.status_code >= 300){
+            std::cout<<"!"<<response.status_code<<response.text<<std::endl;
+            ERR("{}/{}/{} - {} Remove Data Fail ! ERR information:{}",
+                _Index,_Type,_ID, response.text
+            );
+            return false;
+        }
+        return true;
+    }
+    bool ESClient::DeleteIndex(const std::string index) {
+        auto response = _Client->performRequest(elasticlient::Client::HTTPMethod::DELETE, index, "");
+        if(response.status_code < 200 || response.status_code >= 300){
+            ERR("Remove Index {} Fail ! ERR information:{}",
+                index, response.text
+            );
+            return false;
+        }
+        return true;
+    }
+    Json::Value ESClient::SearchDate(const Search index) {
+        const std::string _Index = index.Index(); 
+        const std::string _Type = index.Type();
+        const std::string _ID = index.ID();
+        const std::string _Body = index.ToString();
+        auto response = _Client->search(
+            _Index, 
+            _Type, 
+            _ID, 
+            _Body
+        );
+        if(response.status_code < 200 || response.status_code >= 300){
+            ERR(
+                "{}/{}/{} - {} Search Date fail! ERR information:{}",
+                _Index,_Type,_ID,_Body, response.text
+            );
+            return false;
+        }
+        MicroSeedUtil::JsonUtil Jutil;
+        auto rawresp = Jutil.UnSerialize(response.text);
+        if(!rawresp){
+            ERR(
+                "{}/{}/{} - {} Get Response fail! ERR information:{}",
+                _Index,_Type,_ID,_Body, response.text
+            );
+            return false;
+        }
+        if(rawresp["hits"].isNull() || 
+            rawresp["hits"]["hits"].isNull() ||
+                rawresp["hits"]["hits"][0]["_source"].isNull()){
+                    ERR("{}/{}/{} - {} Get Response fail! ERR information:{}",
+                        _Index,_Type,_ID,_Body, response.text
+                    );
+                    Json::Value root ;
+                    return root;
+                }
+        Json::Value root ;
+        for(int i = 0 ; i < rawresp["hits"]["hits"].size() ; i ++)
+            root.append(rawresp["hits"]["hits"][i]["_source"]);
+        return root ;
+    }
+    //ESCLIENT END
 }

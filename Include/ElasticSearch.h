@@ -1,4 +1,5 @@
 #include <cpr/response.h>
+#include <cstdint>
 #include <elasticlient/client.h>
 #include <iostream>
 #include <jsoncpp/json/value.h>
@@ -7,6 +8,7 @@
 #include <jsoncpp/json/json.h>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 #include "Log.h"
 #include "Util.h"
 namespace MicroSeedElastic
@@ -119,14 +121,6 @@ namespace MicroSeedElastic
         void Dynamic(bool dynamicnum);
         Properties::PropertiesPtr properties();  
     };
-    class Indexer :public Object{
-    public:
-        Indexer();
-        Setting::SettingPtr setting();
-        Tokenizer::TokenizerPtr BuildSettingChain();
-        Properties::PropertiesPtr  BuildMappingChain();
-        Mappings::MappingsPtr mapping();
-    };
     //////////////////////////////////////////////////////////////////////////
     ///////////////////////////查询:单条件检索////////////////////////////////////////////////
     //单个字段的精确匹配
@@ -222,11 +216,116 @@ namespace MicroSeedElastic
     };
     class QueryBool : public QueryObject{
     public:
+        using QueryBoolPtr = std::shared_ptr<QueryBool>;
         QueryBool(std::string key);
         Must::MustPtr must();
         MustNot::MustNotPtr mustnot();
         Should::ShouldPtr should();
         void MiniMumShouldMatch(const int num);
     };
-    
+    class Query : public QueryObject{
+    public:
+        using QueryPtr = std::shared_ptr<Query>;
+        Query();
+        void match_all();
+        QueryBool::QueryBoolPtr Qbool();
+        Must::MustPtr must();
+        MustNot::MustNotPtr mustnot();
+        Should::ShouldPtr should();
+    };
+    class Request {
+    public:
+        using RequestPtr = std::shared_ptr<Request>;
+        Request(
+            std::string _Operatoion,
+            std::string _Index,
+            std::string _Type,
+            std::string _Id 
+        );
+        void SetIndex(std::string index);
+        void SetOperation(std::string Operation);
+        void SetType(std::string Type);
+        void SetID(std::string id);
+
+        const std::string Index() const;
+        const std::string Type() const;
+        const std::string Operatoion() const;
+        const std::string ID() const;
+    private:
+        std::string _Operatoion;
+        std::string _Index;
+        std::string _Type;
+        std::string _Id;
+    };  
+    class Indexer 
+        :public Object, public Request{
+    public:
+        using IndexerPtr = std::shared_ptr<Indexer>;
+        Indexer(std::string index);
+        Setting::SettingPtr setting();
+        Tokenizer::TokenizerPtr BuildSettingChain();
+        Properties::PropertiesPtr  BuildMappingChain();
+        Mappings::MappingsPtr mapping();
+    };
+    class Insert 
+        :public Object, public Request{
+    public:
+        using InsertPtr = std::shared_ptr<Insert>;
+        Insert(std::string index, std::string id);
+    };
+    class Update
+        :public Object, public Request{
+    public:
+        using UpdatePtr = std::shared_ptr<Update>;
+        Update(std::string index, std::string id);
+        Object::ObjectPtr doc();
+        template<typename T>
+        void Add(const std::string key, const T value){
+            this->doc()->Add(key, value);
+        }
+        template<typename R>
+        void Append(const std::string key, const R value){
+            this->doc()->Append(key, value);
+        }
+    };
+    class Delete
+        :public Object, public Request{
+    public:
+        using DeletePtr = std::shared_ptr<Delete>;
+        Delete(std::string index, std::string id);
+    };
+    class Search
+        :public Object, public Request{
+    public:
+        using SearchPtr = std::shared_ptr<Search>;
+        Search(std::string index);
+        Query::QueryPtr query();
+        void size(size_t count);
+        void form(size_t offset);
+    };
+    class BasicClient{
+    public:
+        using BasicClientPtr = std::shared_ptr<BasicClient>;
+        BasicClient() = default;
+        ~BasicClient() = default;
+        virtual bool CreateIndex(const Indexer index) = 0;
+        virtual bool InsertDate(const Insert index) = 0;
+        virtual bool UpdateDate(const Update index) = 0;
+        virtual bool DeleteDate(const Delete index) = 0;
+        virtual bool DeleteIndex(const std::string index) = 0;
+        virtual Json::Value SearchDate(const Search index) = 0;
+    };
+    class ESClient : public BasicClient{
+    public:
+        using ESClientPtr = std::shared_ptr<ESClient>;
+        ESClient(std::vector<std::string> host) ;
+        bool CreateIndex(const Indexer index) override;
+        bool InsertDate(const Insert index) override;
+        bool UpdateDate(const Update index) override;
+        bool DeleteDate(const Delete index) override;
+        bool DeleteIndex(const std::string index) override;
+        Json::Value SearchDate(const Search index) override;
+    private:
+        std::shared_ptr<elasticlient::Client> _Client;
+    };
 }
