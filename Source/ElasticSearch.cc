@@ -26,7 +26,7 @@ namespace MicroSeedElastic
         _Objects[baseptr->GetKey()] = baseptr;
     }
     const std::string Object::ToString()const {
-        Json::Value root ;
+        Json::Value root = _Val ;
         for(auto i : _Objects){
             root[i.first] = i.second->GetVal() ;
         }
@@ -47,7 +47,7 @@ namespace MicroSeedElastic
         ptr = this->GetElememt<Object>(key);
         if(ptr != nullptr)
             return ptr;
-        auto newobj = std::make_shared<Tokenizer>(key);
+        auto newobj = std::make_shared<Object>(key);
         this->AddElememt(newobj);
         return newobj;
     }
@@ -68,7 +68,7 @@ namespace MicroSeedElastic
     std::shared_ptr<Object> Array::NewObject(const std::string& key){
         //在数组里面，我认为不需要去判断我加入
         //进来的这个对象是否存在，完全可以重复出现.
-        auto newobj = std::make_shared<Tokenizer>(key);
+        auto newobj = std::make_shared<Object>(key);
         this->AddElememt(newobj);
         return newobj;
     }
@@ -135,7 +135,7 @@ namespace MicroSeedElastic
     //ANALYSIS END
     //SETTING 
     Setting::Setting()
-        :Object("setting"){}
+        :Object("settings"){}
     Analysis::AnalysisPtr Setting::analysis(){
         Analysis::AnalysisPtr ptr; 
         ptr = this->GetElememt<Analysis>("analysis");
@@ -175,7 +175,7 @@ namespace MicroSeedElastic
     //PROPERTIES END
     //MAPPING
     Mappings::Mappings()
-        :Object("mapping"){
+        :Object("mappings"){
         Dynamic(false);
     }
     void Mappings::Dynamic(bool dynamicnum){
@@ -217,8 +217,8 @@ namespace MicroSeedElastic
         this->Append("fields", val);
     }
     void Range::Field(int gte, int lte) {
-        this->Add("gte", gte);
-        this->Add("lte",lte);
+        _Val[_field]["gte"] = gte;
+        _Val[_field]["lte"] = lte;
     }
     Range::RangePtr QueryObject::range(std::string field) {
         Range::RangePtr ptr; 
@@ -319,7 +319,7 @@ namespace MicroSeedElastic
         auto ret = this->GetElememt<Must>("must");
         if(ret != nullptr)
             return ret ;
-        auto _must = std::make_shared<Must>();
+        auto _must = std::make_shared<Must>("must");
         this->AddElememt(_must);
         return _must;
     }
@@ -327,7 +327,7 @@ namespace MicroSeedElastic
         auto ret = this->GetElememt<MustNot>("must_not");
         if(ret != nullptr)
             return ret ;
-        auto _mustnot = std::make_shared<MustNot>();
+        auto _mustnot = std::make_shared<MustNot>("must_not");
         this->AddElememt(_mustnot);
         return _mustnot;
     }
@@ -335,12 +335,12 @@ namespace MicroSeedElastic
         auto ret = this->GetElememt<Should>("should");
         if(ret != nullptr)
             return ret ;
-        auto _should = std::make_shared<Should>();
+        auto _should = std::make_shared<Should>("should");
         this->AddElememt(_should);
         return _should;
     }
     void QueryBool::MiniMumShouldMatch(const int num){
-        this->Add("mininum_should_match", num);
+        this->Add("minimum_should_match", num);
     }
     //QUERYBOOL END
     //QUERY
@@ -348,12 +348,14 @@ namespace MicroSeedElastic
     Query::Query()
         :QueryObject("query")
     {}
-    void Query::match_all(){}
+    void Query::match_all(){
+        this->Add("match_all", Json::Value(Json::objectValue));
+    }
     QueryBool::QueryBoolPtr Query::Qbool(){
         auto ret = this->GetElememt<QueryBool>("bool");
         if(ret != nullptr)
             return ret ;
-        auto _bool = std::make_shared<QueryBool>();
+        auto _bool = std::make_shared<QueryBool>("bool");
         this->AddElememt(_bool);
         return _bool;
     }
@@ -362,19 +364,19 @@ namespace MicroSeedElastic
     Should::ShouldPtr Query::should(){ return this->Qbool()->should();}
     //QUERY END
     //REQUEST
-    Request::Request(std::string _Operatoion,std::string _Index,
+    Request::Request(std::string _Operation,std::string _Index,
         std::string _Type,std::string _Id )
-        :_Operatoion(_Operatoion),
+        :_Operation(_Operation),
          _Index(_Index),
          _Type(_Type),
          _Id(_Id){}
     void Request::SetIndex(std::string index){ _Index = index;}
-    void Request::SetOperation(std::string Operation){ _Operatoion = Operation;}
+    void Request::SetOperation(std::string Operation){ _Operation = Operation;}
     void Request::SetType(std::string Type){ _Type = Type;}
     void Request::SetID(std::string id){ _Id = id;}
     const std::string Request::Index()const{ return _Index;}
     const std::string Request::Type()const{ return _Type;}
-    const std::string Request::Operatoion()const{ return _Operatoion;}
+    const std::string Request::Operation()const{ return _Operation;}
     const std::string Request::ID()const{ return _Id;}
     //REQUEST END
     //INDEXER
@@ -387,7 +389,7 @@ namespace MicroSeedElastic
         ){}
     Setting::SettingPtr Indexer::setting(){
         Setting::SettingPtr ptr; 
-        ptr = this->GetElememt<Setting>("setting");
+        ptr = this->GetElememt<Setting>("settings");
         if(ptr != nullptr)
             return ptr;
         auto setting = std::make_shared<Setting>();
@@ -410,7 +412,7 @@ namespace MicroSeedElastic
     }
     Mappings::MappingsPtr Indexer::mapping(){
         Mappings::MappingsPtr ptr; 
-        ptr = this->GetElememt<Mappings>("mapping");
+        ptr = this->GetElememt<Mappings>("mappings");
         if(ptr != nullptr)
             return ptr;
         auto mapping = std::make_shared<Mappings>();
@@ -437,10 +439,10 @@ namespace MicroSeedElastic
     ){}
     Object::ObjectPtr Update::doc(){
         Object::ObjectPtr ptr; 
-        ptr = this->GetElememt<Object>("_doc");
+        ptr = this->GetElememt<Object>("doc");
         if(ptr != nullptr)
             return ptr;
-        auto doc = std::make_shared<Object>("_doc");
+        auto doc = std::make_shared<Object>("doc");
         this->AddElememt(doc);
         return doc;
     }
@@ -472,7 +474,7 @@ namespace MicroSeedElastic
         return query;
     }
     void Search::size(size_t count){ this->Add("size", count);}
-    void Search::form(size_t offset){ this->Add("form", offset);}
+    void Search::form(size_t offset){ this->Add("from", offset);}
     //SEARCH END
     //ESCLIENT
     ESClient::ESClient(std::vector<std::string> host)
@@ -480,19 +482,15 @@ namespace MicroSeedElastic
     {}
     bool ESClient::CreateIndex(const Indexer index){
         const std::string _Index = index.Index(); 
-        const std::string _Type = index.Type();
-        const std::string _ID = index.ID();
         const std::string _Body = index.ToString();
-        auto response = _Client->index(
+        auto response = _Client->performRequest(
+            elasticlient::Client::HTTPMethod::PUT,
             _Index, 
-            _Type, 
-            _ID, 
             _Body
         );
         if(response.status_code < 200 || response.status_code >= 300){
-            ERR(
-                "{}/{} - {} Create Index Fail! ERR information:{}",
-                _Index,_Type,_ID,_Body, response.text
+            ERR("Create Index {} Fail! ERR information:{}",
+                _Index, response.text
             );
             return false;
         }
@@ -522,7 +520,7 @@ namespace MicroSeedElastic
         const std::string _Type = index.Type();
         const std::string _ID = index.ID();
         const std::string _Body = index.ToString();
-        const std::string url = _Index + "_update" + _ID;
+        const std::string url = _Index + "/" + _Type + "/" + _ID + "/_update";
         auto response = 
             _Client->performRequest(
                 elasticlient::Client::HTTPMethod::POST, 
@@ -569,7 +567,6 @@ namespace MicroSeedElastic
         auto response = _Client->search(
             _Index, 
             _Type, 
-            _ID, 
             _Body
         );
         if(response.status_code < 200 || response.status_code >= 300){
@@ -577,7 +574,7 @@ namespace MicroSeedElastic
                 "{}/{}/{} - {} Search Date fail! ERR information:{}",
                 _Index,_Type,_ID,_Body, response.text
             );
-            return false;
+            return Json::Value();
         }
         MicroSeedUtil::JsonUtil Jutil;
         auto rawresp = Jutil.UnSerialize(response.text);
@@ -586,7 +583,7 @@ namespace MicroSeedElastic
                 "{}/{}/{} - {} Get Response fail! ERR information:{}",
                 _Index,_Type,_ID,_Body, response.text
             );
-            return false;
+            return Json::Value();
         }
         if(rawresp["hits"].isNull() || 
             rawresp["hits"]["hits"].isNull() ||

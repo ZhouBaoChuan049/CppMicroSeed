@@ -1,3 +1,4 @@
+#pragma once
 #include <cpr/response.h>
 #include <cstdint>
 #include <elasticlient/client.h>
@@ -237,7 +238,7 @@ namespace MicroSeedElastic
     public:
         using RequestPtr = std::shared_ptr<Request>;
         Request(
-            std::string _Operatoion,
+            std::string _Operation,
             std::string _Index,
             std::string _Type,
             std::string _Id 
@@ -249,10 +250,10 @@ namespace MicroSeedElastic
 
         const std::string Index() const;
         const std::string Type() const;
-        const std::string Operatoion() const;
+        const std::string Operation() const;
         const std::string ID() const;
     private:
-        std::string _Operatoion;
+        std::string _Operation;
         std::string _Index;
         std::string _Type;
         std::string _Id;
@@ -264,7 +265,7 @@ namespace MicroSeedElastic
         Indexer(std::string index);
         Setting::SettingPtr setting();
         Tokenizer::TokenizerPtr BuildSettingChain();
-        Properties::PropertiesPtr  BuildMappingChain();
+        Properties::PropertiesPtr BuildMappingChain();
         Mappings::MappingsPtr mapping();
     };
     class Insert 
