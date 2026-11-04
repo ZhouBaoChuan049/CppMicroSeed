@@ -6,7 +6,7 @@
 #include <exception>
 #include <functional>
 #include <stdexcept>
-const std::string url = "http://172.20.0.10:2379";
+const std::string url = "http://dev-etcd::2379";
 
 int main(){
     //创建客户端对象

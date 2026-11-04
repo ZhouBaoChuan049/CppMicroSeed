@@ -3,7 +3,7 @@
 #include <etcd/Watcher.hpp>
 #include <etcd/Response.hpp>
 #include <etcd/Value.hpp>
-const std::string url = "http://172.20.0.10:2379";
+const std::string url = "http://dev-etcd:2379";
 const std::string Key = "/";
 
 void Callback(etcd::Response response){

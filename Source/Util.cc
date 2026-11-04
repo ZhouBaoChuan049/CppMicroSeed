@@ -1,10 +1,15 @@
 #include "../Include/Util.h"
 #include "../Include/Log.h"
+#include <atomic>
 #include <jsoncpp/json/reader.h>
 #include <jsoncpp/json/value.h>
 #include <jsoncpp/json/writer.h>
 #include <memory>
 #include <fstream>
+#include <random>
+#include <cmath>
+#include <string>
+#include <vector>
 using namespace MicroSeedLog ;
 namespace MicroSeedUtil
 {
@@ -92,6 +97,34 @@ namespace MicroSeedUtil
                 deststrings.push_back(sourcestring.substr(Cur));
             return true ;
     }
-
-
+    //RANDOMCODE
+    
+    std::string RandomCode(size_t length, const CodeType type){
+        static const size_t NUMBERLEN = 4 ;
+        static const std::string STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \
+            abcdefghijklmnopqrstuvwxyz";
+        static const std::string NUM = "0123456789";
+        static const std::string MIX = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \
+            abcdefghijklmnopqrstuvwxyz0123456789";
+        static std::atomic<unsigned char> NumberBase ;
+        std::vector<std::string> Options = {STR , NUM , MIX};
+        //数组的下标和枚举的编号完全吻合
+        std::random_device Randdevice ;//随机数种子
+        std::mt19937 gen(Randdevice());//随机数生成引擎
+        std::string Result = "";
+        for(int i = 0 ; i < length - NUMBERLEN ; i ++){
+            int limit = static_cast<unsigned int>
+                (std::pow(10,Options[static_cast<int>(type)].size()));
+            unsigned int ran = gen()%limit; 
+            Result += Options[static_cast<int>(type)][ran];
+        }
+        if(length < NUMBERLEN){
+            return Result;
+        }
+        //然后我需要在尾部添加一个，自增的，只会初始化一次的，长度为4的编号
+        int num = NumberBase.fetch_add(1);
+        std::stringstream ss(Result);
+        ss<<std::setw(4)<<std::setfill('0')<<num;//长度为四，不够填充0
+        return ss.str();
+    }
 }

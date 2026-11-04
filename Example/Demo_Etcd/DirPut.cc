@@ -8,7 +8,7 @@
 #include <memory>
 #include <stdexcept>
 
-const std::string url = "http://172.20.0.10:2379";
+const std::string url = "http://dev-etcd:2379";
 const std::string Key = "/Name/1324";
 const std::string Value = "Mr.Ming";
 
