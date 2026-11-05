@@ -61,10 +61,11 @@ int main(){
     if(!serv_2){
         return -1 ;
     }
-    
-    std::thread t1([&](){ serv_1->RunUntilAskedToQuit(); });
-    std::thread t2([&](){ serv_2->RunUntilAskedToQuit(); });
-    t1.join();
-    t2.join();
+    // 先停止所有服务
+    serv_1->Stop(0);
+    serv_2->Stop(0);
+    // 再等待所有服务退出
+    serv_1->Join();
+    serv_2->Join();
     return 0 ;
 }

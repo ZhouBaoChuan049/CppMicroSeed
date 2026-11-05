@@ -37,10 +37,10 @@ namespace MicroSeedBrpc
             ChannelManager() = default ;
             ~ChannelManager(){}
             void SetWhatServiceNeedTobePayAttention(std::string& servername);//这里也许可以设计成数组？
-            //Insert
-            void InsertChannel(std::string address, std::string servername);
+            //Insert 
+            void InsertChannel(std::string servername, std::string address);
             //Delete
-            void DeleteChannel(std::string address, std::string servername);
+            void DeleteChannel(std::string servername, std::string address);
             ChannelPtr SelectNode(std::string& servername);
             std::string SelectAddress(std::string& servername);
             std::shared_ptr<Channels> GetChannel(const std::string& servername);

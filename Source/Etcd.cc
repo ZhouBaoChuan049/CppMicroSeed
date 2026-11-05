@@ -45,7 +45,13 @@ namespace MicroSeedEtcd{
             return false;
         }    
         auto handler = [this](const std::exception_ptr &eptr){
-            this->Register();
+            // 这个回调运行在 etcd::KeepAlive 自己的续租线程里.在这里直接 Register(),
+            // Register 内 _keep.reset(...) 会立刻析构
+            // 当前这个 KeepAlive，然后 ~KeepAlive() 会 join 它自己的续租线程,
+            // 造成自己join 自己.因此把重建任务交给一个独立线程，脱离续租线程的生命周期.
+            auto leasethread = std::thread([this](){ this->Register(); });
+            leasethread.detach();
+            // this->Register();  
         };
         _keep.reset(new etcd::KeepAlive(_ServiceRegisterCenter,handler,3,leaseid));
         return true;

@@ -18,9 +18,11 @@ namespace MicroSeedBrpc
             return ;
         }
         auto channel = std::make_shared<brpc::Channel>();
+        
         brpc::ChannelOptions options ;
         options.timeout_ms = 30000 ;
         options.protocol = "baidu_std"; 
+
         channel->Init(address.c_str(), &options);
         _ChannelMap.insert({address,channel});
         _Channels.push_back(std::make_pair(address, channel));
@@ -64,7 +66,7 @@ namespace MicroSeedBrpc
     std::shared_ptr<Channels> ChannelManager::GetChannel(const std::string& servername){
         auto it = _Map.find(servername);
         if(it == _Map.end()){
-            return std::make_shared<Channels>();
+            return nullptr ;
         }
         return it->second ;
     }
@@ -75,12 +77,12 @@ namespace MicroSeedBrpc
         _Map.insert(std::make_pair(servername, channel));
     }
 
-    void ChannelManager::InsertChannel(std::string address, std::string servername)
+    void ChannelManager::InsertChannel(std::string servername, std::string address)
     {
         std::unique_lock<std::mutex> Lock(_Mutex);
         std::shared_ptr<Channels> channels = GetChannel(servername);
         if(!channels){
-            ERR("{}有结点{}上线!,未找到管理对象!",servername,address);
+            ERR("{}有结点{}上线!,未找到管理对象!也许你需要添加该服务为关注.",servername,address);
             return;
         } 
         channels->InsertChannel(address);
@@ -88,7 +90,7 @@ namespace MicroSeedBrpc
         return;
     }
 
-    void ChannelManager::DeleteChannel(std::string address, std::string servername)
+    void ChannelManager::DeleteChannel(std::string servername, std::string address)
     {
         std::unique_lock<std::mutex> Lock(_Mutex);
         std::shared_ptr<Channels> channel = GetChannel(servername);
@@ -135,7 +137,7 @@ namespace MicroSeedBrpc
         std::shared_ptr<google::protobuf::Service> service
     ){
         brpc::ServerOptions options ;
-        options.idle_timeout_sec = -1 ;
+        options.idle_timeout_sec = -1 ;//禁用空闲连接超时机制
         auto server = std::make_shared<brpc::Server>();
         int ret = server->AddService(service.get(), brpc::SERVER_DOESNT_OWN_SERVICE);
         if(ret == -1){

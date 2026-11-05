@@ -47,10 +47,6 @@ int main()
             response,
             closure
     );
-    if(control->Failed() == true){
-        ERR("RPC服务调用失败!");
-        return -1 ;
-    }
     std::cout <<"===================================================\n";
     getchar();
     return 0 ;
