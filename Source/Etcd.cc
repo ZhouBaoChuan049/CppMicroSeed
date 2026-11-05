@@ -45,10 +45,14 @@ namespace MicroSeedEtcd{
             return false;
         }    
         auto handler = [this](const std::exception_ptr &eptr){
-            // 这个回调运行在 etcd::KeepAlive 自己的续租线程里.在这里直接 Register(),
-            // Register 内 _keep.reset(...) 会立刻析构
-            // 当前这个 KeepAlive，然后 ~KeepAlive() 会 join 它自己的续租线程,
-            // 造成自己join 自己.因此把重建任务交给一个独立线程，脱离续租线程的生命周期.
+            //这里会引发死锁问题:这个问题非常非常隐蔽!就是说:
+            //_keep.reset()实际上做了两步操作而不是简单的说就是让_keep指针指向一个新的KeepAlive对象,不是的.
+            // 1. 先创建新对象
+            // 2. 销毁旧对象,调用 ~KeepAlive()里面 join 续租线程
+            // 3. 让 _keep 指向新对象
+            //_keep.reset()会销毁_keep指向的原来的那个keepAlive,但是KeepAlive内部有一个续租线程,
+            //这个续租线程还是原来那个续租线程,在销毁这个续租线程的时候,就会调用Join,去等到当前这个线程,
+            //于是就会出现自己等待自己的死锁问题.
             auto leasethread = std::thread([this](){ this->Register(); });
             leasethread.detach();
             // this->Register();  
