@@ -1,5 +1,6 @@
 CompileFlags:
   Add:
+    - -std=c++17
     - -isystem
     - /usr/include/c++/11
     - -isystem
