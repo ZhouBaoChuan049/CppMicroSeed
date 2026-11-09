@@ -1,0 +1,14 @@
+syntax = "proto3" ;
+package AddServer ;
+option cc_generic_services = true;
+
+message MessageReq{
+    int32 num1 = 1 ;
+    int32 num2 = 2 ;
+}
+message MessageResp{
+    int32 Result = 1 ;
+}
+service AddServer{
+    rpc Add(MessageReq) returns (MessageResp) ;
+}
