@@ -1,0 +1,49 @@
+# =============================================================================
+# MicroSeedConfig.cmake.in —— 包配置文件的“模板”
+#
+# 说明：这个文件本身不会被直接使用，它只是一个“模板(.in)”。
+#       CMake 在安装阶段会调用 configure_package_config_file 把它“渲染”成
+#       最终的 MicroSeedConfig.cmake(见顶层 CMakeLists.txt 第 11~12 步)。
+#
+# 模板里的 @...@ 是“占位变量”，渲染时会被替换成真实内容：
+#   例如 @PACKAGE_INIT@ 会被替换成一段 CMake 提供的初始化代码。
+# 最终的 MicroSeedConfig.cmake 是给别人用的：
+#   别人在自己的项目里写 find_package(MicroSeed) 时，CMake 就会去找到并
+#   include 这个文件，从而把 MicroSeed::MicroSeed 目标及依赖准备好。
+# =============================================================================
+
+
+@PACKAGE_INIT@
+# @PACKAGE_INIT@：这是 CMake 提供的一个特殊占位符，必须写在文件开头。
+# 渲染后它会展开成一段“标准初始化代码”，主要做三件事：
+#   1. 计算本 Config 文件所在目录，设置 PACKAGE_PREFIX_DIR 等变量；
+#   2. 定义一个宏 set_and_check()，用来校验依赖路径是否存在；
+#   3. 处理 find_package 的 REQUIRED / COMPONENTS 等选项。
+# 可以简单理解为：这是每个 Config 文件都必须有的“标准开场白”。
+
+
+# 把本包自带的 Find 模块目录追加到 CMake 的模块搜索路径里。
+#   CMAKE_CURRENT_LIST_DIR：指“当前正在被 include 的这个 .cmake 文件所在的目录”。
+#   安装后，我们的 FindDepends.cmake 就在 <安装前缀>/lib/cmake/MicroSeed/modules/ 下，
+#   所以这里把该目录加进 CMAKE_MODULE_PATH，下面的 include 才能找到它。
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules)
+
+
+# 加载本包自带的依赖查找模块(注意文件名叫 FindDepends.cmake)，并立即调用它。
+# 作用：当别人 find_package(MicroSeed) 时，自动帮他把第三方依赖(日志、brpc、
+#       etcd、FFmpeg 等)也一并找齐并链接好，下游项目不用自己再去 find_package。
+include("${CMAKE_CURRENT_LIST_DIR}/modules/FindDepends.cmake")
+find_my_depends()
+
+
+# 导入本包导出的“目标文件”。
+#   MicroSeedTargets.cmake 是在安装阶段由 install(EXPORT ...) 自动生成的
+#   (见顶层 CMakeLists.txt 第 10 步)，里面定义了 MicroSeed::MicroSeed 这个
+#   imported target，指向我们编译出来的静态库和头文件路径。
+include(${CMAKE_CURRENT_LIST_DIR}/MicroSeedTargets.cmake)
+
+
+# 检查 find_package(MicroSeed COMPONENTS xxx) 里请求的组件是否都满足。
+#   check_required_components 也是由 @PACKAGE_INIT@ 展开后提供的宏，
+#   参数是本包的名字 MicroSeed。
+check_required_components(MicroSeed)
