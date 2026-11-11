@@ -92,147 +92,80 @@ sudo make install
 ```bash
 sudo make uninstall
 ```
-注意： uninstall 目标需要项目的 CMake 配置显式定义。如果执行时提示没有该目标，可以根据 install_manifest.txt 中记录的安装路径手动删除安装文件。
 
-# 三、项目目录结构
+## 三、项目目录结构
 
 ```text
 CppMicroSeed/
-├── Design/                 # 项目设计文档与技术方案
-├── Example/                # 组件使用示例与集成示例
-├── Include/                # 组件公共头文件
-│   ├── [组件目录 A]/
-│   ├── [组件目录 B]/
-│   └── ...
-├── Source/                 # 组件具体实现
-│   ├── [组件目录 A]/
-│   ├── [组件目录 B]/
-│   └── ...
-└── Test/                   # 测试代码
-    ├── [组件测试]
-    ├── [集成测试]
-    └── [环境测试]
+├── Cmake/                          # CMake 配置及辅助模块
+│   ├── cmake_uninstall.cmake.in
+│   ├── FindDepends.cmake
+│   └── MicroSeedConfig.cmake.in                          
+├── Design                          # 项目设计文档及设计图
+│   └── Brpc&Etcd.bmp                        
+├── Example/                        # 第三方库及组件使用示例(该目录存放项目各个原生组件的使用示例及集成示例,主要用于展示原生的组件的实际使用方式，帮助开发者快速理解组件接口并将其应用于自己的项目。)
+│   ├── Demo_AmqpCpp/
+│   ├── Demo_Brpc/
+│   │   ├── BrpcAsyncServerAndClient/
+│   │   ├── BrpcHttpServerAndClient/
+│   │   └── BrpcSimpleServerAndClient/
+│   ├── Demo_ElasticSearch/
+│   ├── Demo_Etcd/
+│   ├── Demo_FFmpeg/
+│   ├── Demo_Gflags/
+│   ├── Demo_Gtest/
+│   ├── Demo_Httplib/
+│   ├── Demo_Jsoncpp/
+│   ├── Demo_MailSending/
+│   ├── Demo_Protobuf/
+│   ├── Demo_Spdlog/
+│   └── Demo_WebSocketpp/
+├── Include/                         # 对外提供的公共头文件
+│   ├── Brpc.h
+│   ├── ElasticSearch.h
+│   ├── EmailSend.h
+│   ├── Etcd.h
+│   ├── HLSTranscoder.h
+│   ├── Log.h
+│   └── Util.h
+├── Source/                         # 各组件具体实现代码
+│   ├── Brpc.cc
+│   ├── ElasticSearch.cc
+│   ├── EmailSend.cc
+│   ├── Etcd.cc
+│   ├── HLSTranscoder.cc
+│   ├── Log.cc
+│   └── Util.cc                          
+├── Test/                             # 项目测试代码
+│   ├── EnvironmentTest/              # 开发环境与生产环境测试
+│   │   ├── DevEnvironmentTest/
+│   │   └── ProdEnvironmentTest/
+│   ├── IntegrationTestofBrpcAndEtcd/ # brpc 与 Etcd 联合测试
+│   ├── TestMicroBrpc/                # brpc 组件测试
+│   ├── TestMicroElasticSearch/       # Elasticsearch 组件测试
+│   ├── TestMicroEmailSend/           # 邮件发送组件测试
+│   ├── TestMicroEtcd/                # Etcd 组件测试
+│   ├── TestMicroFFmpeg/              # FFmpeg 组件测试
+│   ├── TestMicroLog/                 # 日志组件测试
+│   └── TestMicroUtilJsoncpp/         # JSON 工具测试
+├── CMakeLists.txt
 ```
 
-## 3.1 Design
 
-[介绍项目设计文档的组织方式，以及设计文档主要涵盖哪些内容。]
+## 四、核心组件一览
 
-## 3.2 Example
 
-[介绍各组件的使用示例、集成示例及运行方式。]
+Include 和 Source 分别存放项目各组件对外提供的公共接口及其具体实现代码。项目按照功能划分组件，通过统一的接口封装底层第三方库及基础设施操作，降低业务代码对底层实现的依赖。
 
-## 3.3 Include
+**目前主要封装了以下组件：**
 
-该目录存放项目对外提供的组件接口及公共头文件。
-
-| 子目录 / 文件 | 说明 |
-|---|---|
-| [待补充] | [待补充] |
-| [待补充] | [待补充] |
-
-## 3.4 Source
-
-该目录存放各组件对应的具体实现代码。
-
-| 子目录 / 文件 | 说明 |
-|---|---|
-| [待补充] | [待补充] |
-| [待补充] | [待补充] |
-
-## 3.5 Test
-
-该目录存放项目各个层次的测试代码，包括组件测试、联合测试以及环境测试等。
-
-具体测试体系将在后文介绍。
-
-# 四、核心组件一览
-
-本项目围绕 C++ 服务端开发中的常见需求，对相关功能进行统一封装。
-
-以下表格按照组件进行整理，包含组件职责、底层依赖以及对应的头文件和源文件。
-
-| 组件名称 | 主要作用 | 底层依赖库 | 头文件 | 源文件 |
-|---|---|---|---|---|
-| [组件名称] | [主要作用] | [依赖库] | [Include 路径] | [Source 路径] |
-| [组件名称] | [主要作用] | [依赖库] | [Include 路径] | [Source 路径] |
-| [组件名称] | [主要作用] | [依赖库] | [Include 路径] | [Source 路径] |
-
-# 五、组件设计介绍
-
-本章节主要介绍各个组件的设计思路、实现方式及关键技术。
-
-重点展示组件封装过程中涉及的设计考量、接口抽象、基础设施集成以及关键问题的处理方式。
-
-## 5.1 [组件名称]
-
-### 设计目标
-
-[介绍该组件主要解决的问题，以及封装该组件的原因。]
-
-### 核心功能
-
-[介绍组件提供的主要能力。]
-
-### 设计与实现
-
-[介绍核心接口、类结构、设计模式及关键实现思路。]
-
-### 关键技术
-
-[介绍组件涉及的关键技术，以及相关问题的解决方式。]
-
-### 使用场景
-
-[介绍该组件在实际项目中的使用场景。]
-
-## 5.2 [组件名称]
-
-[按照上述结构介绍。]
-
-## 5.3 [组件名称]
-
-[按照上述结构介绍。]
-
-# 六、测试体系
-
-CppMicroSeed 不仅对各个组件进行独立测试，同时也通过联合测试及环境测试，验证组件之间的协同能力和整体运行环境的可用性。
-
-## 6.1 组件测试（Component Test）
-
-[介绍如何针对每一个封装组件进行独立测试，包括测试目标、测试内容及测试方式。]
-
-## 6.2 联合测试（Integration Test）
-
-[介绍多个组件或基础设施之间的联合测试，例如 brpc 与 etcd 的集成测试。]
-
-## 6.3 开发环境测试（Development Environment Test）
-
-[介绍开发环境中的整体测试内容、测试流程及验证目标。]
-
-## 6.4 生产环境测试（Production Environment Test）
-
-[介绍生产环境中的整体测试内容、测试流程及与开发环境测试的区别。]
-
-## 6.5 测试执行方式
-
-[待补充：各类测试的执行命令、测试入口及相关配置。]
-
-# 七、注意事项（Notes）
-
-## 7.1 环境与依赖
-
-[待补充：编译器、第三方依赖、基础设施版本及环境配置方面的注意事项。]
-
-## 7.2 配置文件
-
-[待补充：组件配置文件的位置、配置方式以及敏感信息管理要求。]
-
-## 7.3 组件使用
-
-[待补充：组件使用过程中需要注意的接口约束、初始化顺序及资源管理问题。]
-
-## 7.4 其他说明
-
-[待补充：目前已知的问题、限制及其他需要开发者留意的事项。]
+| 组件名称 | 公共接口 | 实现文件 | 主要功能 |
+|---|---|---|---|
+| MicroSeedLog | Log.h | Log.cc | 封装spdlog,提供日志初始化、日志配置及日志输出能力。 |
+| MicroSeedBrpc | Brpc.h | Brpc.cc | 封装Brpc库,提供Brpc远程过程调用客户端和服务器的搭建组件。 |
+| MicroSeedElasticSearch | ElasticSearch.h | ElasticSearch.cc | 封装第三方elasticlient库提供ES客户端组件,对ES的请求正文做层层封装。 |
+| MicroSeedEmailSend | EmailSend.h | EmailSend.cc | 封装libcurl库,提供邮件发送组件，封装邮件发送流程及相关通信功能。 |
+| MicroSeedEtcd | Etcd.h | Etcd.cc | 封装第三方库etcd-cpp-apiv3, Etcd 客户端组件，提供键值操作、租约管理、KeepAlive 及 Watch 等功能。 |
+| MicroSeedHLS | HLSTranscoder.h | HLSTranscoder.cc | 封装libffmpeg库,提供视频编解码,M3U8文件读写功能。 |
+| MicroSeedUtil | Util.h | Util.cc | 小工具集合,提供序列与反序列化、文件读写、字符串分割与随机数生成能功能。 |
 
