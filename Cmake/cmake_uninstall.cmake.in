@@ -1,0 +1,39 @@
+# =============================================================================
+# cmake_uninstall.cmake.in —— 卸载脚本模板
+#
+# 说明：这个文件不是直接执行的，而是被顶层 CMakeLists.txt 里的
+#       configure_file() 渲染成构建目录下的 cmake_uninstall.cmake。
+#       渲染时 @CMAKE_BINARY_DIR@、@CMAKE_COMMAND@ 会被替换成真实值。
+#
+# 原理：make install（或 cmake --install）执行后，CMake 会在构建目录下
+#       生成一个 install_manifest.txt，里面逐行记录了每一个真正被装出去的
+#       文件的绝对路径。本脚本就是读这个清单，把它们一条条删掉。
+#       这样“卸载”永远和“安装”保持一致，不会漏删也不会多删。
+# =============================================================================
+
+
+# 找不到清单就报错：说明还没执行过 make install，自然无从卸载。
+if(NOT EXISTS "@CMAKE_BINARY_DIR@/install_manifest.txt")
+    message(FATAL_ERROR "找不到安装清单: @CMAKE_BINARY_DIR@/install_manifest.txt（请先执行 make install / cmake --install）")
+endif()
+
+# 读取清单文件全部内容，并按换行拆成一个列表 files。
+file(READ "@CMAKE_BINARY_DIR@/install_manifest.txt" files)
+string(REGEX REPLACE "\n" ";" files "${files}")
+
+# 逐个文件删除。
+foreach(file ${files})
+    message(STATUS "正在卸载: $ENV{DESTDIR}${file}")
+    if(IS_SYMLINK "$ENV{DESTDIR}${file}" OR EXISTS "$ENV{DESTDIR}${file}")
+        exec_program(
+            "@CMAKE_COMMAND@" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
+            OUTPUT_VARIABLE rm_out
+            RETURN_VALUE rm_retval
+        )
+        if(NOT "${rm_retval}" STREQUAL 0)
+            message(FATAL_ERROR "删除失败: $ENV{DESTDIR}${file}")
+        endif()
+    else()
+        message(STATUS "文件不存在，跳过: $ENV{DESTDIR}${file}")
+    endif()
+endforeach()
