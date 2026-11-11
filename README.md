@@ -43,6 +43,12 @@
 </div>
 
 
+<p align="right">
+  <a href="./README.md">简体中文</a> |
+  <a href="./README_EN.md">English</a> |
+  <a href="./README_JP.md">日本語</a>
+</p>
+
 ## 一、项目简介
 
 CppMicroSeed 是一个面向 C++17 的微服务项目开发脚手架，旨在整合 C++ 服务端开发过程中常用的基础组件、基础设施客户端及工程化实践，为后续项目开发提供可复用的基础能力。
