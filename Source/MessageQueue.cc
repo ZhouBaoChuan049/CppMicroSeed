@@ -35,7 +35,7 @@ namespace MicroSeedMessageQueue{
         ev_async_send(_EvLoop, &_EvAsync);
         _AsyncThread.join();
     }
-    static void _AsyncCallback(
+    void MessageQueueClient::_AsyncCallback(
         struct ev_loop* loop, 
         ev_async* watcher, 
         int32_t revents){
@@ -76,6 +76,7 @@ namespace MicroSeedMessageQueue{
                                         .onSuccess([=](const std::string& Name,
                                             uint32_t MessageCount,
                                             uint32_t ConsumerCount){
+                                                _Cv.notify_all();
                                                 INF("声明队列[{}]成功",Name);
                                                 INF("队列中有[{}]个消息",MessageCount);
                                                 INF("队列中有[{}]个消费者",ConsumerCount);
@@ -84,13 +85,16 @@ namespace MicroSeedMessageQueue{
                                                     Exchange,
                                                     Queue,
                                                     BindKey).onSuccess([=](){
+                                                        _Cv.notify_all();
                                                         INF("绑定交换机和队列成功!");
                                                     }).onError([=](const char* ErrMessage){
+                                                        _Cv.notify_all();
                                                         ERR("绑定交换机和队列失败!错误信息:[{}]",ErrMessage);
                                                         abort();
                                                     });
                                         })//这个调用链还有先后顺序,onError返回的不是DeferredQueue调用不了onSuccess
                                         .onError([=](const char* ErrMessage){
+                                            _Cv.notify_all();
                                             ERR("队列声明失败!错误信息:[{}]",ErrMessage);
                                             abort();
                                         });
@@ -103,9 +107,9 @@ namespace MicroSeedMessageQueue{
         if(Type == EXCHANGETYPE_DELAYED){
             _Declared(setting,args, true);//创建死信队列
             //你创建延时队列时，需要告诉 RabbitMQ：这个队列中的消息过期后，应该转发到哪个死信交换机，以及使用什么 Routing Key。
-            args[DEAD_LETTER_EXCHANGE] = "x-dead-letter-exchange";
-            args[DEAD_LETTER_ROUTING_KEY] = "x-dead-letter-routing-key";
-            args[MESSAGE_TTL] = "x-message-ttl";
+            args[DEAD_LETTER_EXCHANGE] = setting.DLX_ExchangeName();
+            args[DEAD_LETTER_ROUTING_KEY] = setting.DLX_BindAndRouteKey();
+            args[MESSAGE_TTL] = setting.DelaiedTTL;
         }
         _Declared(setting, args,false);
     }
@@ -120,15 +124,21 @@ namespace MicroSeedMessageQueue{
             std::unique_lock<std::mutex> DeclaredLock(_DeclaredMutex);
             std::unique_lock<std::mutex> Lock(_Mutex);
             _Channel.consume(queue).onMessage([=](
+                //这里不应该加唤醒:
+                //"收到消息"不该是"唤醒某个等待者"的信号，
+                //而且未来若真有线程在等`_Cv` ，会被每条消息误唤醒。
                                     const AMQP::Message &message,//收到的消息
                                     uint64_t deliveryTag,//消息的唯一标识
                                     bool redelivered){ //消息是否已经被重复发过了
                                         std::string body(message.body(),message.bodySize());
                                         INF("订阅者收到消息[{}]",body);
+                                        if(callback) callback(message.body(), message.bodySize());
                                         _Channel.ack(deliveryTag);
                                     }).onSuccess([=](){
+                                        _Cv.notify_all();
                                         INF("订阅队列消息成功!");
                                     }).onError([=](const char* ErrMessage){
+                                        _Cv.notify_all();
                                         INF("订阅队列消息失败!错误信息:[{}]",ErrMessage);
                                         abort();     
                                     });
@@ -137,7 +147,10 @@ namespace MicroSeedMessageQueue{
     void MessageQueueClient::Wait(){
         //看那张设计图,我们的线程1(业务执行线程)他是异步执行的,
         //如果线程1没有事情好执行,那么线程1先结束后
-        _AsyncThread.join();//所以得在这里阻塞住
+        //_AsyncThread.join();//所以得在这里阻塞住
+        //使用join会引发二次join异常报错
+        std::cout<<"[输入回车以便结束订阅]"<<std::endl;
+        getchar();
     }
     Publisher::Publisher(
         MessageQueueClient::MQPtr client, 
@@ -162,9 +175,9 @@ namespace MicroSeedMessageQueue{
     void Subscriber::subscribe(MessageCallBack&& callback){
         _Callback = std::move(callback);
         if(_Setting.ExchangeType == EXCHANGETYPE_DELAYED){
-            _Client->consume(_Setting.DLX_QueueName(), callback);
+            _Client->consume(_Setting.DLX_QueueName(), _Callback);
         }else{
-            _Client->consume(_Setting.QueueName, callback);
+            _Client->consume(_Setting.QueueName, _Callback);
         }
     }
 }

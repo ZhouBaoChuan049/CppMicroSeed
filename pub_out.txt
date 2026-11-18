@@ -1,0 +1,1 @@
+/bin/bash: 行 1: ./SimplePublisher: 没有那个文件或目录
