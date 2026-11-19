@@ -22,20 +22,9 @@ int main(int argc , char* argv[]){
         std::cout<<"获取Tracker服务器连接句柄失败!"<<std::endl;
         return -1;
     }
-    //进行文件的下载
-    int64_t FileSize;
-    ret = storage_download_file_to_file1(
-        TrackerServer, 
-        nullptr, 
-        argv[1], "./Buffer.bak", 
-        &FileSize);
-    if(ret != 0){
-        std::cout<<"下载文件失败:"<<STRERROR(ret)<<std::endl;
-        return -1;
-    }
-    auto TrackerServer1 = tracker_get_connection();
-    std::cout<<(size_t)TrackerServer << " "<<(size_t)TrackerServer1<<std::endl;
-    std::cout<<TrackerServer->sock << " "<<TrackerServer1->sock<<std::endl;
+    // auto TrackerServer1 = tracker_get_connection();
+    // std::cout<<(size_t)TrackerServer << " "<<(size_t)TrackerServer1<<std::endl;
+    // std::cout<<TrackerServer->sock << " "<<TrackerServer1->sock<<std::endl;
     //删除文件
     ret = storage_delete_file1(TrackerServer, nullptr, argv[1]);
     if(ret != 0){
