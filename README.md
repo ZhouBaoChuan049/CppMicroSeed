@@ -1,6 +1,15 @@
 <div align="center">
   <h1>
-    <img src="https://raw.githubusercontent.com/ZhouBaoChuan049/ImageOfBlog/main/CppSeed.jpg" width="200" alt="CppMicroSeed Logo"/>
+    <img
+      src="https://raw.githubusercontent.com/ZhouBaoChuan049/ImageOfBlog/main/CppSeed.jpg#gh-light-mode-only"
+      width="200"
+      alt="CppMicroSeed Logo"
+    />
+    <img
+      src="https://raw.githubusercontent.com/ZhouBaoChuan049/ImageOfBlog/main/1c534f81-f62d-48dc-bf2c-2e274a0405a5.png#gh-dark-mode-only"
+      width="200"
+      alt="CppMicroSeed Logo"
+    />
     <br/>
     CppMicroSeed
   </h1>
@@ -10,9 +19,12 @@
     <br/>
     A C++17 microservice project scaffolding tool for standardized and maintainable service development.
   </p>
+
   <p>
     <i>Build a solid foundation. Focus on what matters.</i>
   </p>
+</div>
+
 
   <p>
     <img src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white" alt="C++17"/>
