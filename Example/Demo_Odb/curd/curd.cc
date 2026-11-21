@@ -1,11 +1,6 @@
-#include <boost/date_time/posix_time/time_parsers.hpp>
 #include <odb/database.hxx>
-#include <odb/exception.hxx>
-#include <odb/mysql/connection.hxx>
 #include <odb/mysql/transaction.hxx>
 #include <odb/mysql/database.hxx>
-#include <odb/query.hxx>
-#include <odb/transaction.hxx>
 
 #include "Student.h"
 #include "Student-odb.hxx"

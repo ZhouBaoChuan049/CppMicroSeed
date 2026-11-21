@@ -16,4 +16,4 @@ $(OBJ) : $(SRC)
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) *.ts *.mp4

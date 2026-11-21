@@ -5,4 +5,4 @@ $(BIN) : $(SRC)
 	g++ -o $@ $^ $(REQUIRE)
 .PHONY: clean
 clean:
-	rm -f $(BIN)
+	rm -f $(BIN) *.pb.*
