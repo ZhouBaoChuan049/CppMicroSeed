@@ -13,19 +13,13 @@
     <br/>
     CppMicroSeed
   </h1>
-
-  <p>
+    <p>
     一个面向 C++17 的微服务项目开发脚手架，帮助开发者快速构建规范、易于维护的微服务项目。
     <br/>
     A C++17 microservice project scaffolding tool for standardized and maintainable service development.
   </p>
-
-  <p>
-    <i>Build a solid foundation. Focus on what matters.</i>
-  </p>
 </div>
-
-
+<div align="center">
   <p>
     <img src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white" alt="C++17"/>
     <img src="https://img.shields.io/badge/CMake-Build-064F8C?logo=cmake&logoColor=white" alt="CMake"/>
