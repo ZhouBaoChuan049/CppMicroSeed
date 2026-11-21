@@ -8,6 +8,7 @@ Proc
 
 # MP4 视频文件
 *.mp4
+*.ts
 
 # Log.cc 生成的日志文件
 *.dat
