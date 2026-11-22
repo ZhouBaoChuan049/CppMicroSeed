@@ -152,8 +152,8 @@ namespace MicroSeedHLS
             }
             av_packet_rescale_ts(
                 PackAge, 
-                InputAVStream->time_base, 
-                OutputAVStream->time_base
+                InputAVStream->time_base, //输入时间基
+                OutputAVStream->time_base //输出时间基
             );
             ret = av_interleaved_write_frame(OutputContext, PackAge);
             if(ret < 0){
@@ -187,7 +187,4 @@ namespace MicroSeedHLS
             ERR("错误处理函数发生未知错误!");
         return ErrBuffer ;
     }
-    
-
-
 }      

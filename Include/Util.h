@@ -35,5 +35,6 @@ namespace MicroSeedUtil{
     class RandomUtil{
     public:
         std::string RandomCode(size_t length, const CodeType type);
+        size_t RandomNum(int left,int right);//生成区间范围内的随机数
     };
 }

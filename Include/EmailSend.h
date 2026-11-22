@@ -40,6 +40,7 @@ namespace MicroSeedEmailSend{
     };
     class EmailSendClient : public BaseClient{
     public:
+        using EmailSendPtr = std::shared_ptr<EmailSendClient>;
         EmailSendClient(MailSetting setting, 
             std::string filename, 
             std::string placeholder = "{{CODE}}"
