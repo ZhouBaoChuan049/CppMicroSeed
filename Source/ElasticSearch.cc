@@ -176,7 +176,7 @@ namespace MicroSeedElastic
     //MAPPING
     Mappings::Mappings()
         :Object("mappings"){
-        Dynamic(false);
+        Dynamic(true);
     }
     void Mappings::Dynamic(bool dynamicnum){
         this->Add("dynamic", dynamicnum);
@@ -501,11 +501,11 @@ namespace MicroSeedElastic
         const std::string _Type = index.Type();
         const std::string _ID = index.ID();
         const std::string _Body = index.ToString();
-        auto response = _Client->index(
-            _Index, 
-            _Type, 
-            _ID, 
-            _Body);
+        auto response = _Client->performRequest(
+            elasticlient::Client::HTTPMethod::PUT,
+            _Index + "/" + _Type + "/" + _ID + "?refresh=true",
+            _Body
+        );
         if(response.status_code < 200 || response.status_code >= 300){
             ERR(
                 "{}/{}/{} - {} Insert fail! ERR information:{}",
@@ -585,18 +585,16 @@ namespace MicroSeedElastic
             );
             return Json::Value();
         }
-        if(rawresp["hits"].isNull() || 
-            rawresp["hits"]["hits"].isNull() ||
-                rawresp["hits"]["hits"][0]["_source"].isNull()){
-                    ERR("{}/{}/{} - {} Get Response fail! ERR information:{}",
-                        _Index,_Type,_ID,_Body, response.text
-                    );
-                    Json::Value root ;
-                    return root;
-                }
-        Json::Value root ;
-        for(int i = 0 ; i < rawresp["hits"]["hits"].size() ; i ++)
-            root.append(rawresp["hits"]["hits"][i]["_source"]);
+        if(rawresp["hits"].isNull() || rawresp["hits"]["hits"].isNull()){
+            ERR("{}/{}/{} - {} Get Response fail! ERR information:{}",
+                _Index,_Type,_ID,_Body, response.text
+            );
+            return Json::Value();
+        }
+        Json::Value root(Json::arrayValue) ;
+        for(Json::ArrayIndex i = 0 ; i < rawresp["hits"]["hits"].size() ; ++i)
+            if(!rawresp["hits"]["hits"][i]["_source"].isNull())
+                root.append(rawresp["hits"]["hits"][i]["_source"]);
         return root ;
     }
     //ESCLIENT END

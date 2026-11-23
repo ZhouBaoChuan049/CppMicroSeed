@@ -107,23 +107,26 @@ CppMicroSeed/
 │   ├── cmake_uninstall.cmake.in
 │   ├── FindDepends.cmake
 │   └── MicroSeedConfig.cmake.in                          
-├── Design                          # 项目设计文档及设计图
-│   └── Brpc&Etcd.bmp                        
+├── Design                          # 项目设计文档及开发日志
+│   ├── AMQPMessageQueue.bmp
+│   ├── Brpc&Etcd.bmp
+│   ├── Fastdfs.bmp
+│   └── odb.bmp                      
 ├── Example/                        # 第三方库及组件使用示例(该目录存放项目各个原生组件的使用示例及集成示例,主要用于展示原生的组件的实际使用方式，帮助开发者快速理解组件接口并将其应用于自己的项目。)
 │   ├── Demo_AmqpCpp/
 │   ├── Demo_Brpc/
-│   │   ├── BrpcAsyncServerAndClient/
-│   │   ├── BrpcHttpServerAndClient/
-│   │   └── BrpcSimpleServerAndClient/
 │   ├── Demo_ElasticSearch/
 │   ├── Demo_Etcd/
 │   ├── Demo_FFmpeg/
+│   ├── Demo_Fastdfs/
 │   ├── Demo_Gflags/
 │   ├── Demo_Gtest/
 │   ├── Demo_Httplib/
 │   ├── Demo_Jsoncpp/
 │   ├── Demo_MailSending/
+│   ├── Demo_Odb/
 │   ├── Demo_Protobuf/
+│   ├── Demo_Redis/
 │   ├── Demo_Spdlog/
 │   └── Demo_WebSocketpp/
 ├── Include/                         # 对外提供的公共头文件
@@ -131,17 +134,25 @@ CppMicroSeed/
 │   ├── ElasticSearch.h
 │   ├── EmailSend.h
 │   ├── Etcd.h
+│   ├── FastDFS.h
 │   ├── HLSTranscoder.h
 │   ├── Log.h
+│   ├── MessageQueue.h
+│   ├── Odb.h
+│   ├── Redispp.h
 │   └── Util.h
 ├── Source/                         # 各组件具体实现代码
 │   ├── Brpc.cc
 │   ├── ElasticSearch.cc
 │   ├── EmailSend.cc
 │   ├── Etcd.cc
+│   ├── FastDFS.cc
 │   ├── HLSTranscoder.cc
 │   ├── Log.cc
-│   └── Util.cc                          
+│   ├── MessageQueue.cc
+│   ├── Odb.cc
+│   ├── Redispp.cc
+│   └── Util.cc                        
 ├── Test/                             # 项目测试代码
 │   ├── EnvironmentTest/              # 开发环境与生产环境测试
 │   │   ├── DevEnvironmentTest/
@@ -151,9 +162,13 @@ CppMicroSeed/
 │   ├── TestMicroElasticSearch/       # Elasticsearch 组件测试
 │   ├── TestMicroEmailSend/           # 邮件发送组件测试
 │   ├── TestMicroEtcd/                # Etcd 组件测试
+│   ├── TestMicroFastDFS/             # FastDFS 组件测试
 │   ├── TestMicroFFmpeg/              # FFmpeg 组件测试
 │   ├── TestMicroLog/                 # 日志组件测试
-│   └── TestMicroUtilJsoncpp/         # JSON 工具测试
+│   ├── TestMicroMessageQueue/        # 消息队列组件测试
+│   ├── TestMicroOdb/                 # ODB 组件测试
+│   ├── TestMicroRedispp/             # Redis++ 组件测试
+│   └── TestMicroUtil/                # 通用工具组件测试
 ├── CMakeLists.txt
 ```
 
@@ -174,4 +189,8 @@ Include 和 Source 分别存放项目各组件对外提供的公共接口及其�
 | MicroSeedEtcd | Etcd.h | Etcd.cc | 封装第三方库etcd-cpp-apiv3, Etcd 客户端组件，提供键值操作、租约管理、KeepAlive 及 Watch 等功能。 |
 | MicroSeedHLS | HLSTranscoder.h | HLSTranscoder.cc | 封装libffmpeg库,提供视频编解码,M3U8文件读写功能。 |
 | MicroSeedUtil | Util.h | Util.cc | 小工具集合,提供序列与反序列化、文件读写、字符串分割与随机数生成能功能。 |
+| MicroSeedMessageQueue | MessageQueue.h | MessageQueue.cc | 封装 AMQP-CPP(libamqpcpp)库,提供 RabbitMQ 消息队列的发布/订阅、延迟队列与死信队列等能力。 |
+| MicroSeedRedispp | Redispp.h | Redispp.cc | 封装 redis-plus-plus 库,提供 Redis 客户端连接池与客户端对象创建能力。 |
+| MicroSeedOdb | Odb.h | Odb.cc | 封装 ODB 框架,提供 MySQL 数据库连接对象的创建与管理能力。 |
+| MicroSeedFastDFS | FastDFS.h | FastDFS.cc | 封装 FastDFS 客户端(libfastcommon/libfdfsclient),提供文件上传、下载与删除等分布式文件存储能力。 |
 
