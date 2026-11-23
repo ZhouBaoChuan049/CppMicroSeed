@@ -114,7 +114,10 @@ CppMicroSeed/
 │   ├── FindDepends.cmake
 │   └── MicroSeedConfig.cmake.in
 ├── Design/                         # 設計ドキュメントおよび設計図
-│   └── Brpc&Etcd.bmp
+│   ├── AMQPMessageQueue.bmp
+│   ├── Brpc&Etcd.bmp
+│   ├── Fastdfs.bmp
+│   └── odb.bmp
 ├── Example/                        # コンポーネントおよびサードパーティライブラリの使用例
 │   ├── Demo_AmqpCpp/
 │   ├── Demo_Brpc/
@@ -123,13 +126,16 @@ CppMicroSeed/
 │   │   └── BrpcSimpleServerAndClient/
 │   ├── Demo_ElasticSearch/
 │   ├── Demo_Etcd/
+│   ├── Demo_Fastdfs/
 │   ├── Demo_FFmpeg/
 │   ├── Demo_Gflags/
 │   ├── Demo_Gtest/
 │   ├── Demo_Httplib/
 │   ├── Demo_Jsoncpp/
 │   ├── Demo_MailSending/
+│   ├── Demo_Odb/
 │   ├── Demo_Protobuf/
+│   ├── Demo_Redis/
 │   ├── Demo_Spdlog/
 │   └── Demo_WebSocketpp/
 ├── Include/                         # 外部に公開する共通ヘッダーファイル
@@ -137,16 +143,24 @@ CppMicroSeed/
 │   ├── ElasticSearch.h
 │   ├── EmailSend.h
 │   ├── Etcd.h
+│   ├── FastDFS.h
 │   ├── HLSTranscoder.h
 │   ├── Log.h
+│   ├── MessageQueue.h
+│   ├── Odb.h
+│   ├── Redispp.h
 │   └── Util.h
 ├── Source/                          # 各コンポーネントの実装コード
 │   ├── Brpc.cc
 │   ├── ElasticSearch.cc
 │   ├── EmailSend.cc
 │   ├── Etcd.cc
+│   ├── FastDFS.cc
 │   ├── HLSTranscoder.cc
 │   ├── Log.cc
+│   ├── MessageQueue.cc
+│   ├── Odb.cc
+│   ├── Redispp.cc
 │   └── Util.cc
 ├── Test/                            # プロジェクトのテストコード
 │   ├── EnvironmentTest/              # 開発環境および本番環境のテスト
@@ -157,9 +171,13 @@ CppMicroSeed/
 │   ├── TestMicroElasticSearch/       # Elasticsearch コンポーネントのテスト
 │   ├── TestMicroEmailSend/           # メール送信コンポーネントのテスト
 │   ├── TestMicroEtcd/                # etcd コンポーネントのテスト
+│   ├── TestMicroFastDFS/             # FastDFS コンポーネントのテスト
 │   ├── TestMicroFFmpeg/              # FFmpeg コンポーネントのテスト
 │   ├── TestMicroLog/                 # ログコンポーネントのテスト
-│   └── TestMicroUtilJsoncpp/         # JSON ユーティリティのテスト
+│   ├── TestMicroMessageQueue/        # メッセージキューコンポーネントのテスト
+│   ├── TestMicroOdb/                 # ODB コンポーネントのテスト
+│   ├── TestMicroRedispp/             # Redis++ コンポーネントのテスト
+│   └── TestMicroUtil/                # 汎用ユーティリティコンポーネントのテスト
 ├── CMakeLists.txt
 └── README.md
 ```
@@ -181,3 +199,7 @@ CppMicroSeed/
 | MicroSeedEtcd | Etcd.h | Etcd.cc | サードパーティライブラリ etcd-cpp-apiv3 をカプセル化し、etcd のキー・バリュー操作、Lease 管理、KeepAlive、Watch などの機能を提供します。 |
 | MicroSeedHLS | HLSTranscoder.h | HLSTranscoder.cc | FFmpeg をカプセル化し、動画のエンコード・デコードおよび M3U8 ファイルの処理機能を提供します。 |
 | MicroSeedUtil | Util.h | Util.cc | シリアライズ・デシリアライズ、ファイル入出力、文字列分割、乱数生成などの汎用ユーティリティ機能を提供します。 |
+| MicroSeedMessageQueue | MessageQueue.h | MessageQueue.cc | AMQP-CPP(libamqpcpp) をカプセル化し、RabbitMQ のメッセージキューにおけるパブリッシュ/サブスクライブ、遅延キュー、デッドレターキューなどの機能を提供します。 |
+| MicroSeedRedispp | Redispp.h | Redispp.cc | redis-plus-plus ライブラリをカプセル化し、Redis クライアントの接続プールおよびクライアントオブジェクト生成機能を提供します。 |
+| MicroSeedOdb | Odb.h | Odb.cc | ODB フレームワークをカプセル化し、MySQL データベース接続オブジェクトの生成・管理機能を提供します。 |
+| MicroSeedFastDFS | FastDFS.h | FastDFS.cc | FastDFS クライアント(libfastcommon / libfdfsclient)をカプセル化し、ファイルのアップロード・ダウンロード・削除などの分散ファイルストレージ機能を提供します。 |

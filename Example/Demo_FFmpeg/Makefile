@@ -6,4 +6,4 @@ $(OBJ) : $(SRC)
 	g++ -o $@ $^ $(REQUIRE)
 .PHONY: clean
 clean:
-	rm -f $(OBJ) 
+	rm -f $(OBJ) *.ts* *.mp4*

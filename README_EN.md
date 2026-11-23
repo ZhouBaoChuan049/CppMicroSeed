@@ -112,7 +112,10 @@ CppMicroSeed/
 │   ├── FindDepends.cmake
 │   └── MicroSeedConfig.cmake.in
 ├── Design/                         # Design documents and diagrams
-│   └── Brpc&Etcd.bmp
+│   ├── AMQPMessageQueue.bmp
+│   ├── Brpc&Etcd.bmp
+│   ├── Fastdfs.bmp
+│   └── odb.bmp
 ├── Example/                        # Usage examples for native components and third-party libraries
 │   ├── Demo_AmqpCpp/
 │   ├── Demo_Brpc/
@@ -121,13 +124,16 @@ CppMicroSeed/
 │   │   └── BrpcSimpleServerAndClient/
 │   ├── Demo_ElasticSearch/
 │   ├── Demo_Etcd/
+│   ├── Demo_Fastdfs/
 │   ├── Demo_FFmpeg/
 │   ├── Demo_Gflags/
 │   ├── Demo_Gtest/
 │   ├── Demo_Httplib/
 │   ├── Demo_Jsoncpp/
 │   ├── Demo_MailSending/
+│   ├── Demo_Odb/
 │   ├── Demo_Protobuf/
+│   ├── Demo_Redis/
 │   ├── Demo_Spdlog/
 │   └── Demo_WebSocketpp/
 ├── Include/                         # Public header files exposed to external projects
@@ -135,16 +141,24 @@ CppMicroSeed/
 │   ├── ElasticSearch.h
 │   ├── EmailSend.h
 │   ├── Etcd.h
+│   ├── FastDFS.h
 │   ├── HLSTranscoder.h
 │   ├── Log.h
+│   ├── MessageQueue.h
+│   ├── Odb.h
+│   ├── Redispp.h
 │   └── Util.h
 ├── Source/                          # Component implementation files
 │   ├── Brpc.cc
 │   ├── ElasticSearch.cc
 │   ├── EmailSend.cc
 │   ├── Etcd.cc
+│   ├── FastDFS.cc
 │   ├── HLSTranscoder.cc
 │   ├── Log.cc
+│   ├── MessageQueue.cc
+│   ├── Odb.cc
+│   ├── Redispp.cc
 │   └── Util.cc
 ├── Test/                            # Project test code
 │   ├── EnvironmentTest/              # Development and production environment tests
@@ -155,9 +169,13 @@ CppMicroSeed/
 │   ├── TestMicroElasticSearch/       # Elasticsearch component tests
 │   ├── TestMicroEmailSend/           # Email sending component tests
 │   ├── TestMicroEtcd/                # etcd component tests
+│   ├── TestMicroFastDFS/             # FastDFS component tests
 │   ├── TestMicroFFmpeg/              # FFmpeg component tests
 │   ├── TestMicroLog/                 # Logging component tests
-│   └── TestMicroUtilJsoncpp/         # JSON utility tests
+│   ├── TestMicroMessageQueue/        # Message queue component tests
+│   ├── TestMicroOdb/                 # ODB component tests
+│   ├── TestMicroRedispp/             # Redis++ component tests
+│   └── TestMicroUtil/                # Utility component tests
 ├── CMakeLists.txt
 └── README.md
 ```
@@ -179,3 +197,7 @@ The project organizes its components by functionality and encapsulates underlyin
 | MicroSeedEtcd | Etcd.h | Etcd.cc | Encapsulates the third-party etcd-cpp-apiv3 library and provides etcd key-value operations, lease management, KeepAlive, and Watch functionality. |
 | MicroSeedHLS | HLSTranscoder.h | HLSTranscoder.cc | Encapsulates FFmpeg and provides video encoding and decoding, as well as M3U8 file processing. |
 | MicroSeedUtil | Util.h | Util.cc | A collection of utility functions providing serialization and deserialization, file I/O, string splitting, and random number generation. |
+| MicroSeedMessageQueue | MessageQueue.h | MessageQueue.cc | Encapsulates AMQP-CPP (libamqpcpp) and provides RabbitMQ message queue capabilities such as publish/subscribe, delayed queues, and dead-letter queues. |
+| MicroSeedRedispp | Redispp.h | Redispp.cc | Encapsulates the redis-plus-plus library and provides Redis client connection pooling and client object creation. |
+| MicroSeedOdb | Odb.h | Odb.cc | Encapsulates the ODB framework and provides creation and management of MySQL database connection objects. |
+| MicroSeedFastDFS | FastDFS.h | FastDFS.cc | Encapsulates the FastDFS client (libfastcommon / libfdfsclient) and provides distributed file storage capabilities such as upload, download, and deletion. |

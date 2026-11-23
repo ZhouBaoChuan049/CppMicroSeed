@@ -27,4 +27,4 @@ $(BOJ_2) : $(SRC_2)
 
 .PHONY: clean
 clean:
-	rm -f $(BOJ_1) $(BOJ_2)
+	rm -f $(BOJ_1) $(BOJ_2) *.pb.*

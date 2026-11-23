@@ -1,6 +1,7 @@
 #include "../Include/EmailSend.h"
 #include <algorithm>
 #include <sstream>
+//#define __DEV_ENVIRONMENT__
 namespace MicroSeedEmailSend{
     bool VerificationCodeGenerator::Generate(std::string& code) {
         unsigned int random_num = 0;
@@ -106,6 +107,12 @@ namespace MicroSeedEmailSend{
     bool EmailSendClient::Send(std::string dest){
         CurlHandle handle;
         CURL*  curl  = handle.GetCurlHandle();
+        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 15L);  // 连接超时15秒
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+#ifdef __DEV_ENVIRONMENT__
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);   // 不验证对端SSL证书
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);   // 不验证主机名
+#endif
         struct curl_slist* recipients = Configure(curl, dest);
         if(recipients == nullptr)
             return false;

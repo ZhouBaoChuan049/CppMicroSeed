@@ -10,6 +10,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <iostream>
 using namespace MicroSeedLog ;
 namespace MicroSeedUtil
 {
@@ -98,14 +99,11 @@ namespace MicroSeedUtil
             return true ;
     }
     //RANDOMCODE
-    
-    std::string RandomCode(size_t length, const CodeType type){
-        static const size_t NUMBERLEN = 4 ;
-        static const std::string STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \
-            abcdefghijklmnopqrstuvwxyz";
+    std::string RandomUtil::RandomCode(size_t length, const CodeType type){
+        static const size_t NUMBERLEN = 6 ;
+        static const std::string STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         static const std::string NUM = "0123456789";
-        static const std::string MIX = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \
-            abcdefghijklmnopqrstuvwxyz0123456789";
+        static const std::string MIX = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         static std::atomic<unsigned char> NumberBase ;
         std::vector<std::string> Options = {STR , NUM , MIX};
         //数组的下标和枚举的编号完全吻合
@@ -113,8 +111,7 @@ namespace MicroSeedUtil
         std::mt19937 gen(Randdevice());//随机数生成引擎
         std::string Result = "";
         for(int i = 0 ; i < length - NUMBERLEN ; i ++){
-            int limit = static_cast<unsigned int>
-                (std::pow(10,Options[static_cast<int>(type)].size()));
+            size_t limit = Options[static_cast<int>(type)].size();
             unsigned int ran = gen()%limit; 
             Result += Options[static_cast<int>(type)][ran];
         }
@@ -124,7 +121,13 @@ namespace MicroSeedUtil
         //然后我需要在尾部添加一个，自增的，只会初始化一次的，长度为4的编号
         int num = NumberBase.fetch_add(1);
         std::stringstream ss(Result);
-        ss<<std::setw(4)<<std::setfill('0')<<num;//长度为四，不够填充0
+        ss<<std::setw(6)<<std::setfill('0')<<num;//长度为四，不够填充0
         return ss.str();
+    }
+    size_t RandomUtil::RandomNum(int left,int right){
+        std::random_device rd;
+        std::mt19937 generator(rd());//范围:[left,right]
+        std::uniform_int_distribution<int> distribution(left, right);
+        return distribution(generator);
     }
 }
