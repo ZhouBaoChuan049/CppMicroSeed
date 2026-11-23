@@ -23,11 +23,10 @@
 #     例如 spdlog 对应 libspdlog.so，curl 对应 libcurl.so。
 # -----------------------------------------------------------------------------
 set(libs
-    # ============ 日志模块 ============
+
     spdlog        # 高性能 C++ 日志库(对应 libspdlog)
     fmt           # spdlog 底层的格式化库(编译版 spdlog 依赖 fmt)
 
-    # ============ RPC 框架 brpc 及其传递依赖 ============
     brpc          # 百度开源的 RPC 框架
     protobuf      # Protocol Buffers 序列化库(brpc 依赖，源码里也直接用了 google::protobuf)
     gflags        # 命令行参数解析库(brpc 的依赖)
@@ -37,43 +36,42 @@ set(libs
     dl            # 系统动态链接加载库 libdl
     pthread       # 系统 POSIX 线程库 libpthread
 
-    # ============ 服务发现 etcd ============
     etcd-cpp-api  # etcd 的 C++ 客户端库
     cpprest       # 微软 C++ REST SDK(casablanca)，etcd 客户端依赖
 
-    # ============ 搜索引擎 ElasticSearch ============
     elasticlient  # Elasticsearch 的 C++ 客户端库
     cpr           # 现代 C++ HTTP 请求库(elasticlient 依赖)
     jsoncpp       # JSON 解析/生成库
 
-    # ============ 邮件发送 ============
     curl          # 底层 HTTP/SMTP 等协议传输库 libcurl
 
-    # ============ 音视频转码 FFmpeg ============
     avcodec       # FFmpeg 编解码库
     avformat      # FFmpeg 封装/解封装库
     avutil        # FFmpeg 通用工具库
 
-    # -------------------------------------------------------------------------
-    # 【以下这些库当前项目暂时用不到，属于“以后要写”的功能，故先注释保留】
-    # 等后续实现对应功能模块时，直接取消下面这几行的注释即可重新启用。
-    # -------------------------------------------------------------------------
-    # amqpcpp      # AMQP-CPP，RabbitMQ 消息队列客户端(目前只在 Example 演示里用)
-    # ev           # libev 事件循环库，AMQP-CPP 的底层依赖
-    # fdfsclient   # FastDFS 客户端，分布式文件存储
-    # fastcommon   # FastDFS 的基础公共库
-    # gtest        # GoogleTest 单元测试框架(属于 Test 目录，不属于核心库)
-    # odb          # ODB，C++ 对象关系映射(ORM)框架核心库
-    # odb-mysql    # ODB 的 MySQL 数据库驱动
-    # odb-boost    # ODB 的 Boost 支持库
-    # hiredis      # Redis 官方 C 客户端
-    # redis++      # Redis 的 C++ 客户端封装
-    # boost_system # Boost.System 库(当前源码没有直接使用)
+    amqpcpp      # AMQP-CPP，RabbitMQ 消息队列客户端(目前只在 Example 演示里用)
+    ev           # libev 事件循环库，AMQP-CPP 的底层依赖
+    
+    fdfsclient   # FastDFS 客户端，分布式文件存储
+    fastcommon   # FastDFS 的基础公共库
+    
+    gtest        # GoogleTest 单元测试框架(属于 Test 目录，不属于核心库)
+    
+    odb          # ODB，C++ 对象关系映射(ORM)框架核心库
+    odb-mysql    # ODB 的 MySQL 数据库驱动
+    odb-boost    # ODB 的 Boost 支持库
+    
+    hiredis      # Redis 官方 C 客户端
+    redis++      # Redis 的 C++ 客户端封装
+    
+    boost_system # Boost.System 库(当前源码没有直接使用)
 )
-# 小结：上面被注释掉的 11 个库(amqpcpp、ev、fdfsclient、fastcommon、gtest、
-#       odb、odb-mysql、odb-boost、hiredis、redis++、boost_system)是暂时多余的，
-#       删除(注释)它们是怕编译时系统里没装这些库而导致 find_library 失败报错。
-#       等以后真的实现消息队列、FastDFS、Redis、ODB 等功能时再取消注释。
+# 小结：以上 libs 列表覆盖了本项目所有组件所需的第三方依赖，其中新增的四个子模块
+#       所对应的依赖库如下，现已全部启用，find_my_depends() 会逐一查找并链接：
+#       - 消息队列(AMQP-CPP) : amqpcpp、ev
+#       - FastDFS             : fdfsclient、fastcommon
+#       - ODB                 : odb、odb-mysql、odb-boost
+#       - Redis               : hiredis、redis++
 
 
 # -----------------------------------------------------------------------------
